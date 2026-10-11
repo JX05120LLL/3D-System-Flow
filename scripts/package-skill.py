@@ -1,8 +1,8 @@
 """Build and verify the standalone, reproducible system-flow skill archive.
 
 Run after ``npm run build`` so the bundled browser and CLI assets are current.
-Only the contents of ``system-flow/`` are distributed; repository source,
-examples, local dependencies, and temporary caches are not included.
+Only the contents of ``system-flow/`` are distributed, including its reusable
+example inputs; repository source, local dependencies, and caches are excluded.
 """
 
 from __future__ import annotations
@@ -19,8 +19,9 @@ from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 
 ROOT = Path(__file__).resolve().parent.parent
 SKILL = ROOT / "system-flow"
-ARCHIVE = ROOT / "artifacts" / "system-flow-v2.zip"
-REPORT = ROOT / "artifacts" / "package" / "archive.json"
+VERSION = json.loads((SKILL / "package.json").read_text(encoding="utf-8"))["version"]
+ARCHIVE = ROOT / "artifacts" / "release" / f"system-flow-v{VERSION}.zip"
+REPORT = ROOT / "artifacts" / "release" / "archive.json"
 SKIP_DIRS = frozenset({"node_modules", "__pycache__", ".cache", ".pytest_cache", ".mypy_cache", ".ruff_cache"})
 SKIP_FILES = frozenset({".DS_Store", "Thumbs.db"})
 SKIP_SUFFIXES = (".pyc", ".pyo", ".pyd", ".tmp", ".swp", ".swo", "~")
@@ -45,7 +46,7 @@ def collect_files(source: Path) -> list[tuple[str, bytes]]:
             relative = path.relative_to(source).as_posix()
             files.append((f"system-flow/{relative}", path.read_bytes()))
     files.sort(key=lambda item: item[0])
-    required = {"system-flow/SKILL.md", "system-flow/package.json", "system-flow/assets/viewer.js", "system-flow/scripts/generate.mjs"}
+    required = {"system-flow/SKILL.md", "system-flow/package.json", "system-flow/assets/viewer.js", "system-flow/assets/spatial.js", "system-flow/assets/spatial-template.html", "system-flow/assets/spatial.css", "system-flow/examples/microservices-spatial.diagram.json", "system-flow/examples/document-pipeline-spatial.diagram.json", "system-flow/references/licenses/three.txt", "system-flow/references/spatial.md", "system-flow/scripts/generate.mjs"}
     missing = required.difference(name for name, _ in files)
     if missing:
         raise ValueError(f"Incomplete skill directory; missing: {', '.join(sorted(missing))}")

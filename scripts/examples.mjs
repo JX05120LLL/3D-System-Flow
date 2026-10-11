@@ -5,14 +5,18 @@ import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const check = process.argv.includes('--check');
-const names = ['traditional-microservices', 'traditional-microservices-order-flow'];
+const examples = [
+  { name: 'traditional-microservices', source: 'tests/fixtures/traditional-microservices.diagram.json', renderer: '2d' },
+  { name: 'traditional-microservices-order-flow', source: 'tests/fixtures/traditional-microservices-order-flow.diagram.json', renderer: '2d' },
+  { name: 'microservices-spatial', source: 'system-flow/examples/microservices-spatial.diagram.json', renderer: '3d' },
+  { name: 'document-pipeline-spatial', source: 'system-flow/examples/document-pipeline-spatial.diagram.json', renderer: '3d' },
+];
 const stage = 'artifacts/example-build';
 const reportPath = check ? 'artifacts/examples-check-report.json' : 'artifacts/examples-generate-report.json';
 const run = args => execFileSync(process.execPath, args, { encoding: 'utf8', timeout: 90000 });
 const assert = (condition, message) => { if (!condition) throw new Error(message); };
 await mkdir(stage, { recursive: true });
-await mkdir('images', { recursive: true });
-const browser = await chromium.launch({ channel: 'chromium', args: ['--disable-gpu'] });
+const browser = await chromium.launch({ channel: 'chromium', args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
 const report = { mode: check ? 'check' : 'generate', browser: browser.version(), platform: process.platform, examples: [], errors: [] };
 try {
   const context = await browser.newContext({ viewport: { width: 1366, height: 768 }, offline: true, serviceWorkers: 'block' });
@@ -20,21 +24,42 @@ try {
   const errors = [], requests = [];
   page.on('pageerror', error => errors.push(error.message));
   context.on('request', request => { if (/^https?:/.test(request.url())) requests.push(request.url()); });
-  for (const name of names) {
+  for (const { name, source, renderer } of examples) {
     console.log(`${check ? 'check' : 'generate'} ${name}`);
-    const source = `examples/${name}.diagram.json`;
-    const html = `examples/${name}.html`;
+    const html = `${stage}/${name}.html`;
     const model = JSON.parse(await readFile(source, 'utf8'));
     run(['system-flow/scripts/validate.mjs', source]);
+    run(['system-flow/scripts/generate.mjs', source, '--renderer', renderer, '--output', html, '--overwrite']);
     if (check) {
+      // Check reproducible generation without requiring checked-in HTML or preview images.
       const candidate = `${stage}/${name}.check.html`;
-      run(['system-flow/scripts/generate.mjs', source, '--output', candidate, '--overwrite']);
-      assert((await readFile(candidate)).equals(await readFile(html)), `${name}: HTML is stale; run npm run examples:generate`);
-    } else {
-      run(['system-flow/scripts/generate.mjs', source, '--output', html, '--overwrite']);
+      run(['system-flow/scripts/generate.mjs', source, '--renderer', renderer, '--output', candidate, '--overwrite']);
+      assert((await readFile(candidate)).equals(await readFile(html)), `${name}: repeated HTML generation differs`);
     }
     await page.setViewportSize({ width: 1366, height: 768 });
     await page.goto(pathToFileURL(resolve(html)).href);
+    if (renderer === '3d') {
+      await page.waitForFunction(() => typeof window.__sandboxPrototype?.state === 'function');
+      const embedded = await page.evaluate(() => JSON.parse(document.getElementById('blueprint-data').textContent));
+      assert(JSON.stringify(model) === JSON.stringify(embedded), `${name}: HTML source model differs`);
+      assert(await page.locator('html').getAttribute('data-renderer') === 'webgl', `${name}: WebGL renderer did not initialize`);
+      const data = await page.evaluate(() => window.__sandboxPrototype.state());
+      const nodes = [...model.nodes, ...(model.spatial?.interiors ?? []).flatMap(interior => interior.nodes)];
+      assert(JSON.stringify([...data.objectIds].sort()) === JSON.stringify(nodes.map(node => node.id).sort()), `${name}: 3D lost authored objects`);
+      const scenarios = model.spatial?.scenarios ?? [];
+      assert(data.demo.stepsTotal === (scenarios[0]?.steps.length ?? 0), `${name}: 3D scenario steps differ`);
+      if (scenarios.length) {
+        await page.locator('#demo-step').click();
+        const stepped = await page.evaluate(() => window.__sandboxPrototype.state());
+        assert(stepped.demo.stepId === scenarios[0].steps[0].id && stepped.selectedId === scenarios[0].steps[0].focusId, `${name}: first scenario step differs`);
+        await page.locator('#demo-reset').click();
+        assert((await page.evaluate(() => window.__sandboxPrototype.state())).demo.index === -1, `${name}: 3D scenario reset failed`);
+      }
+      await page.setViewportSize({ width: 375, height: 812 });
+      assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${name}: narrow viewport overflows`);
+      report.examples.push({ name, source, renderer, model: { nodes: model.nodes.length, edges: model.edges.length, groups: model.groups.length }, objects: nodes.length, scenarios: scenarios.length, htmlBytes: (await stat(html)).size });
+      continue;
+    }
     await page.evaluate(() => window.blueprint.ready);
     const data = await page.evaluate(() => {
       const state = window.blueprint.getState();
@@ -54,7 +79,7 @@ try {
     assert(data.canvasRatio >= .7, `${name}: desktop canvas below 70%`);
     await page.setViewportSize({ width: 1920, height: 1080 });
     await page.getByRole('button', { name: '适应画布', exact: true }).click();
-    if (!check && name === 'traditional-microservices') await page.screenshot({ path: 'images/traditional-microservices-preview.png' });
+    if (!check && name === 'traditional-microservices') await page.screenshot({ path: `${stage}/${name}-preview.png` });
     await page.setViewportSize({ width: 375, height: 812 });
     await page.reload();
     await page.evaluate(() => window.blueprint.ready);
@@ -94,9 +119,8 @@ try {
         outputs[format] = { ...info, bytes: bytes.length };
       }
     }
-    report.examples.push({ name, model: { nodes: model.nodes.length, edges: model.edges.length, groups: model.groups.length }, htmlBytes: (await stat(html)).size, geometry: data.state.diagnostics, canvasRatio: data.canvasRatio, outputs });
+    report.examples.push({ name, source, renderer, model: { nodes: model.nodes.length, edges: model.edges.length, groups: model.groups.length }, htmlBytes: (await stat(html)).size, geometry: data.state.diagnostics, canvasRatio: data.canvasRatio, outputs });
   }
-  assert((await stat('images/traditional-microservices-preview.png')).size > 1000, 'README preview is missing');
   assert(!errors.length && !requests.length, `Unexpected browser errors or network ${JSON.stringify({ errors, requests })}`);
   report.status = 'passed'; report.externalRequests = requests; report.pageErrors = errors;
   await context.close();

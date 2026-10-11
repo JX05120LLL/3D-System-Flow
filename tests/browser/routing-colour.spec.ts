@@ -80,9 +80,9 @@ test('full offline microservice model keeps continuous curves, straight fallback
   expect(requests).toEqual([]);
 });
 
-test('README overview and order flow default to horizontal compositions with only curves or single straight lines', async ({ page }) => {
+test('traditional overview and order flow default to horizontal compositions with only curves or single straight lines', async ({ page }) => {
   const html = resolve('artifacts/acceptance-traditional-microservices-overview.html');
-  execFileSync(process.execPath, ['system-flow/scripts/generate.mjs', 'examples/traditional-microservices.diagram.json', '--output', html, '--overwrite']);
+  execFileSync(process.execPath, ['system-flow/scripts/generate.mjs', 'tests/fixtures/traditional-microservices.diagram.json', '--output', html, '--overwrite']);
   const requests: string[] = [];
   const errors: string[] = [];
   page.on('request', request => { if (/^https?:/i.test(request.url())) requests.push(request.url()); });
@@ -105,7 +105,7 @@ test('README overview and order flow default to horizontal compositions with onl
     expect(commands.join('') === 'ML' || commands.slice(1).every(command => command === 'C')).toBe(true);
   }
   const detailHtml = resolve('artifacts/acceptance-traditional-microservices-order-flow.html');
-  execFileSync(process.execPath, ['system-flow/scripts/generate.mjs', 'examples/traditional-microservices-order-flow.diagram.json', '--output', detailHtml, '--overwrite']);
+  execFileSync(process.execPath, ['system-flow/scripts/generate.mjs', 'tests/fixtures/traditional-microservices-order-flow.diagram.json', '--output', detailHtml, '--overwrite']);
   await page.goto(pathToFileURL(detailHtml).href);
   await idle(page, true);
   const detail = await page.evaluate(() => {

@@ -1,0 +1,14 @@
+{
+  "name": "system-flow-microservices-3d-prototype",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=24 <25" },
+  "scripts": {
+    "build": "node build.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test tests/*.test.ts"
+  },
+  "dependencies": { "three": "0.186.1" },
+  "devDependencies": { "@types/three": "0.186.0", "esbuild": "0.25.12", "typescript": "5.9.3" }
+}

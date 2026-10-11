@@ -3,7 +3,7 @@ import { dirname, resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-export const noticePackages = ['elkjs', 'ajv', 'fast-deep-equal', 'd3-selection', 'd3-zoom', 'd3-dispatch', 'd3-drag', 'd3-interpolate', 'd3-transition', 'd3-color', 'd3-timer', 'd3-ease'];
+export const noticePackages = ['elkjs', 'ajv', 'fast-deep-equal', 'd3-selection', 'd3-zoom', 'd3-dispatch', 'd3-drag', 'd3-interpolate', 'd3-transition', 'd3-color', 'd3-timer', 'd3-ease', 'three'];
 
 function repositoryUrl(pkg) {
   let source = typeof pkg.repository === 'object' ? pkg.repository.url : pkg.repository;

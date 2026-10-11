@@ -71,6 +71,8 @@ jobs:
         run: |
           npm run test:package
           npm run examples:check
+          npm run package:skill
+          python scripts/package-skill.py --check
       - name: Preserve verification evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -82,5 +84,6 @@ jobs:
             artifacts/test-results/
             artifacts/package/report.json
             artifacts/examples-check-report.json
+            artifacts/release/
           if-no-files-found: ignore
           retention-days: 14

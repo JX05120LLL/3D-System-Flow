@@ -1,0 +1,1246 @@
+{
+  "schemaVersion": "2.0",
+  "id": "microservices-spatial",
+  "title": "传统电商微服务 · 三维结构与教学路径",
+  "description": "教学示意：总览、内部组件和演示路径均为假设，需按真实源码与文档核查。空间位置、尺寸、模型形态和演示时长不表示真实部署、规模或性能；本图不发送业务请求。",
+  "view": {
+    "kind": "overview",
+    "direction": "RIGHT",
+    "theme": "light",
+    "primaryPath": [
+      "request-gateway",
+      "gateway-order"
+    ]
+  },
+  "groups": [],
+  "nodes": [
+    {
+      "id": "customer",
+      "kind": "start",
+      "label": "用户发起下单",
+      "summary": "Web / App",
+      "details": "演示客户端提交下单请求，不对应真实产品入口。",
+      "evidenceStatus": "assumed"
+    },
+    {
+      "id": "gateway",
+      "kind": "process",
+      "label": "API 网关",
+      "summary": "边缘防护 · 鉴权 · 路由",
+      "details": "接收 HTTPS 下单请求；CDN/WAF、限流、认证接入均为典型能力，真实网关部署方式和调用顺序需核查。",
+      "evidenceStatus": "assumed"
+    },
+    {
+      "id": "auth",
+      "kind": "process",
+      "label": "认证服务",
+      "summary": "提供身份校验",
+      "details": "向网关提供身份校验能力。图中不指定 OAuth、会话或令牌实现。",
+      "evidenceStatus": "assumed"
+    },
+    {
+      "id": "order",
+      "kind": "process",
+      "label": "订单服务",
+      "summary": "编排下单并汇总结果",
+      "details": "订单服务创建待支付订单，按预留结果决定是否请求支付，并向客户端返回最终同步结果。库存不足或支付失败时走补偿；详见配套下单流程图。",
+      "evidenceStatus": "assumed"
+    },
+    {
+      "id": "inventory",
+      "kind": "process",
+      "label": "库存服务",
+      "summary": "预留 / 释放库存",
+      "details": "向订单服务返回预留成功或库存不足；支付失败时可收到释放预留请求。锁粒度、幂等和超时回收未在图中指定。",
+      "evidenceStatus": "assumed"
+    },
+    {
+      "id": "payment",
+      "kind": "process",
+      "label": "支付服务",
+      "summary": "同步收单与流水",
+      "details": "关联订单与第三方支付渠道。本示意限定为收单请求立即返回确定成功或失败的同步场景；异步回调、处理中和超时不在图内。",
+      "evidenceStatus": "assumed"
+    },
+    {
+      "id": "order-db",
+      "kind": "store",
+      "label": "订单库",
+      "summary": "订单服务自有数据",
+      "evidenceStatus": "assumed"
+    },
+    {
+      "id": "inventory-db",
+      "kind": "store",
+      "label": "库存库",
+      "summary": "库存服务自有数据",
+      "evidenceStatus": "assumed"
+    },
+    {
+      "id": "payment-db",
+      "kind": "store",
+      "label": "支付库",
+      "summary": "支付服务自有流水",
+      "evidenceStatus": "assumed"
+    },
+    {
+      "id": "payment-provider",
+      "kind": "external",
+      "label": "第三方支付",
+      "summary": "外部收单渠道",
+      "details": "支付服务依赖的外部收单能力。本示意采用立即返回确定结果的场景，未指定供应商。",
+      "evidenceStatus": "assumed"
+    },
+    {
+      "id": "event-bus",
+      "kind": "store",
+      "label": "事件总线",
+      "summary": "订单确认事件",
+      "details": "代表异步消息传递能力，不指定 Kafka、RabbitMQ 等产品，也不承诺具体投递语义。",
+      "evidenceStatus": "assumed"
+    },
+    {
+      "id": "notify",
+      "kind": "process",
+      "label": "通知服务",
+      "summary": "消费事件并发送消息",
+      "details": "订阅订单确认事件并异步向用户发送通知。渠道、重试和去重机制由真实系统决定。",
+      "evidenceStatus": "assumed"
+    }
+  ],
+  "edges": [
+    {
+      "id": "request-gateway",
+      "source": "customer",
+      "target": "gateway",
+      "kind": "control",
+      "directed": true,
+      "label": "HTTPS 下单",
+      "evidenceStatus": "assumed"
+    },
+    {
+      "id": "gateway-order",
+      "source": "gateway",
+      "target": "order",
+      "kind": "control",
+      "directed": true,
+      "label": "鉴权后路由",
+      "evidenceStatus": "assumed"
+    },
+    {
+      "id": "gateway-auth",
+      "source": "gateway",
+      "target": "auth",
+      "kind": "dependency",
+      "directed": true,
+      "label": "校验身份",
+      "evidenceStatus": "assumed"
+    },
+    {
+      "id": "order-inventory",
+      "source": "order",
+      "target": "inventory",
+      "kind": "dependency",
+      "directed": true,
+      "label": "预留库存",
+      "details": "库存服务返回预留结果；支付失败后，订单服务还会请求库存服务释放已预留库存。",
+      "evidenceStatus": "assumed"
+    },
+    {
+      "id": "order-payment",
+      "source": "order",
+      "target": "payment",
+      "kind": "dependency",
+      "directed": true,
+      "label": "预留成功后收单",
+      "details": "仅库存预留成功时发起支付。此教学示意限定第三方渠道同步返回确定结果。",
+      "evidenceStatus": "assumed"
+    },
+    {
+      "id": "order-order-db",
+      "source": "order",
+      "target": "order-db",
+      "kind": "data",
+      "directed": true,
+      "label": "订单状态",
+      "evidenceStatus": "assumed"
+    },
+    {
+      "id": "inventory-inventory-db",
+      "source": "inventory",
+      "target": "inventory-db",
+      "kind": "data",
+      "directed": true,
+      "label": "库存状态",
+      "evidenceStatus": "assumed"
+    },
+    {
+      "id": "payment-payment-db",
+      "source": "payment",
+      "target": "payment-db",
+      "kind": "data",
+      "directed": true,
+      "label": "支付流水",
+      "evidenceStatus": "assumed"
+    },
+    {
+      "id": "payment-provider",
+      "source": "payment",
+      "target": "payment-provider",
+      "kind": "dependency",
+      "directed": true,
+      "label": "收单请求",
+      "details": "支付渠道的同步返回结果详见下单流程图；本图只展示依赖方向。",
+      "evidenceStatus": "assumed"
+    },
+    {
+      "id": "order-event-bus",
+      "source": "order",
+      "target": "event-bus",
+      "kind": "data",
+      "directed": true,
+      "label": "确认后发布",
+      "details": "仅成功确认订单后发布事件；发布可靠性策略未指定。",
+      "evidenceStatus": "assumed"
+    },
+    {
+      "id": "event-bus-notify",
+      "source": "event-bus",
+      "target": "notify",
+      "kind": "data",
+      "directed": true,
+      "label": "异步消费",
+      "evidenceStatus": "assumed"
+    }
+  ],
+  "spatial": {
+    "interiors": [
+      {
+        "owner": "order",
+        "nodes": [
+          {
+            "id": "order/receive",
+            "label": "接收下单请求",
+            "summary": "来自网关的业务请求",
+            "details": "承接外层 API 网关路由的下单请求，不指定接口字段或真实校验逻辑。",
+            "kind": "start",
+            "evidenceStatus": "assumed"
+          },
+          {
+            "id": "order/draft",
+            "label": "创建待支付订单",
+            "summary": "形成初始订单状态",
+            "details": "代表订单服务创建待支付状态的职责，不指定表结构、事务边界或生成编号的方法。",
+            "kind": "store",
+            "evidenceStatus": "assumed"
+          },
+          {
+            "id": "order/reserve",
+            "label": "请求库存预留",
+            "summary": "向外层库存服务询问结果",
+            "details": "请求外层库存服务预留本次订单需要的库存，锁粒度、幂等和超时回收仍未指定。",
+            "kind": "process",
+            "evidenceStatus": "assumed"
+          },
+          {
+            "id": "order/check",
+            "label": "判断库存结果",
+            "summary": "预留成功或库存不足",
+            "details": "显式决定是否继续发起支付，库存不足时不会沿此示意路径请求收单。",
+            "kind": "decision",
+            "evidenceStatus": "assumed"
+          },
+          {
+            "id": "order/payment",
+            "label": "请求同步收单",
+            "summary": "库存成功后进入支付",
+            "details": "请求外层支付服务，并等待本教学场景的确定成功或失败结果。",
+            "kind": "process",
+            "evidenceStatus": "assumed"
+          },
+          {
+            "id": "order/result",
+            "label": "汇总订单结果",
+            "summary": "确认、失败与补偿职责",
+            "details": "库存不足时返回失败；支付失败时请求释放已预留库存并汇总失败；成功时确认订单后请求发布确认事件。此处聚合职责，不指定补偿、持久化或发布可靠性策略。",
+            "kind": "end",
+            "evidenceStatus": "assumed"
+          }
+        ],
+        "edges": [
+          {
+            "source": "order/receive",
+            "target": "order/draft",
+            "label": "下单请求",
+            "details": "请求进入待支付订单的逻辑状态创建，不指定实际数据库操作。",
+            "kind": "control",
+            "id": "order/link-1",
+            "directed": true,
+            "evidenceStatus": "assumed"
+          },
+          {
+            "source": "order/draft",
+            "target": "order/reserve",
+            "label": "待支付订单",
+            "details": "示意创建待支付状态后协调库存预留，真实事务顺序需核查。",
+            "kind": "control",
+            "id": "order/link-2",
+            "directed": true,
+            "evidenceStatus": "assumed"
+          },
+          {
+            "source": "order/reserve",
+            "target": "order/check",
+            "label": "库存预留结果",
+            "details": "把库存服务的成功或不足结果交给显式判断。",
+            "kind": "control",
+            "id": "order/link-3",
+            "directed": true,
+            "evidenceStatus": "assumed"
+          },
+          {
+            "source": "order/check",
+            "target": "order/payment",
+            "label": "库存预留成功",
+            "details": "只有库存预留成功的分支继续请求支付，保留外层示例的条件。",
+            "kind": "control",
+            "id": "order/link-4",
+            "directed": true,
+            "evidenceStatus": "assumed"
+          },
+          {
+            "source": "order/check",
+            "target": "order/result",
+            "label": "库存不足",
+            "details": "库存不足直接进入失败结果汇总，不执行支付步骤。",
+            "kind": "control",
+            "id": "order/link-5",
+            "directed": true,
+            "evidenceStatus": "assumed"
+          },
+          {
+            "source": "order/payment",
+            "target": "order/result",
+            "label": "确定支付结果",
+            "details": "汇总成功或失败；支付失败后的释放库存职责见结果节点说明。",
+            "kind": "control",
+            "id": "order/link-6",
+            "directed": true,
+            "evidenceStatus": "assumed"
+          }
+        ]
+      },
+      {
+        "owner": "inventory",
+        "nodes": [
+          {
+            "id": "inventory/receive",
+            "label": "接收库存请求",
+            "summary": "来自外层订单服务",
+            "details": "承接订单服务发起的预留请求，或支付失败后释放已有预留的请求。",
+            "kind": "start",
+            "evidenceStatus": "assumed"
+          },
+          {
+            "id": "inventory/operation",
+            "label": "识别库存操作",
+            "summary": "预留或释放的目标",
+            "details": "区分本次逻辑操作及涉及的库存范围，具体请求字段和校验规则尚未核查。",
+            "kind": "process",
+            "evidenceStatus": "assumed"
+          },
+          {
+            "id": "inventory/adjust",
+            "label": "形成调整结果",
+            "summary": "核对可用性或释放预留",
+            "details": "预留时形成成功或库存不足的结论；释放时处理已有预留的回退职责。不承诺并发、重复请求或异常输入的实现。",
+            "kind": "process",
+            "evidenceStatus": "assumed"
+          },
+          {
+            "id": "inventory/state",
+            "label": "关联库存状态",
+            "summary": "库存服务拥有的数据",
+            "details": "表示库存调整需要关联外层库存库中的逻辑状态。是否写入、如何保证一致性需由真实实现确认。",
+            "kind": "store",
+            "evidenceStatus": "assumed"
+          },
+          {
+            "id": "inventory/result",
+            "label": "返回库存结果",
+            "summary": "预留成功、不足或释放结果",
+            "details": "向订单服务返回本次操作的逻辑结论；返回字段和失败语义仍待核查。",
+            "kind": "end",
+            "evidenceStatus": "assumed"
+          }
+        ],
+        "edges": [
+          {
+            "source": "inventory/receive",
+            "target": "inventory/operation",
+            "label": "库存操作请求",
+            "details": "把预留或释放请求交给操作识别职责。",
+            "kind": "control",
+            "id": "inventory/link-1",
+            "directed": true,
+            "evidenceStatus": "assumed"
+          },
+          {
+            "source": "inventory/operation",
+            "target": "inventory/adjust",
+            "label": "预留或释放目标",
+            "details": "表示已识别的库存操作，不把预留与释放画成同一次顺序操作。",
+            "kind": "control",
+            "id": "inventory/link-2",
+            "directed": true,
+            "evidenceStatus": "assumed"
+          },
+          {
+            "source": "inventory/adjust",
+            "target": "inventory/state",
+            "label": "核对或更新库存",
+            "details": "关联数据职责，库存不足并不意味着必须更新库存。",
+            "kind": "data",
+            "id": "inventory/link-3",
+            "directed": true,
+            "evidenceStatus": "assumed"
+          },
+          {
+            "source": "inventory/state",
+            "target": "inventory/result",
+            "label": "库存状态与结论",
+            "details": "将数据关联后的逻辑结果提供给订单服务。",
+            "kind": "data",
+            "id": "inventory/link-4",
+            "directed": true,
+            "evidenceStatus": "assumed"
+          }
+        ]
+      },
+      {
+        "owner": "payment",
+        "nodes": [
+          {
+            "id": "payment/receive",
+            "label": "接收支付请求",
+            "summary": "来自外层订单服务",
+            "details": "承接库存预留成功后发起的逻辑支付请求，不指定收单参数。",
+            "kind": "start",
+            "evidenceStatus": "assumed"
+          },
+          {
+            "id": "payment/associate",
+            "label": "关联订单与渠道",
+            "summary": "组织本次收单上下文",
+            "details": "把支付请求与订单及外层第三方支付关联，不指定商户配置或渠道选择算法。",
+            "kind": "process",
+            "evidenceStatus": "assumed"
+          },
+          {
+            "id": "payment/collect",
+            "label": "请求外部收单",
+            "summary": "等待确定成功或失败",
+            "details": "调用外层第三方支付能力，本子图限定为同步返回确定结果，不模拟真实支付或资金动作。",
+            "kind": "process",
+            "evidenceStatus": "assumed"
+          },
+          {
+            "id": "payment/record",
+            "label": "关联支付流水",
+            "summary": "支付服务自有状态",
+            "details": "表示支付服务需要关联外层支付库中的逻辑流水；写入顺序与一致性策略仍需核查。",
+            "kind": "store",
+            "evidenceStatus": "assumed"
+          },
+          {
+            "id": "payment/result",
+            "label": "返回支付结果",
+            "summary": "交给订单服务汇总",
+            "details": "向订单服务提供本教学场景的确定支付结果，订单确认或补偿由外层订单服务承担。",
+            "kind": "end",
+            "evidenceStatus": "assumed"
+          }
+        ],
+        "edges": [
+          {
+            "source": "payment/receive",
+            "target": "payment/associate",
+            "label": "支付请求",
+            "details": "逻辑请求进入订单与渠道的关联职责。",
+            "kind": "control",
+            "id": "payment/link-1",
+            "directed": true,
+            "evidenceStatus": "assumed"
+          },
+          {
+            "source": "payment/associate",
+            "target": "payment/collect",
+            "label": "收单上下文",
+            "details": "关联后的请求交给外部收单职责，不指定供应商协议。",
+            "kind": "control",
+            "id": "payment/link-2",
+            "directed": true,
+            "evidenceStatus": "assumed"
+          },
+          {
+            "source": "payment/collect",
+            "target": "payment/record",
+            "label": "确定收单结果",
+            "details": "将本场景的确定结果关联到支付流水，不保证未核查的提交策略。",
+            "kind": "data",
+            "id": "payment/link-3",
+            "directed": true,
+            "evidenceStatus": "assumed"
+          },
+          {
+            "source": "payment/record",
+            "target": "payment/result",
+            "label": "支付流水与结论",
+            "details": "返回给订单服务的逻辑结论与本次支付状态关联。",
+            "kind": "data",
+            "id": "payment/link-4",
+            "directed": true,
+            "evidenceStatus": "assumed"
+          }
+        ]
+      }
+    ],
+    "models": [
+      {
+        "nodeId": "customer",
+        "shape": "client",
+        "color": "#69e1dd",
+        "shortLabel": "客户端"
+      },
+      {
+        "nodeId": "gateway",
+        "shape": "gateway",
+        "color": "#62dbdf",
+        "shortLabel": "API 网关"
+      },
+      {
+        "nodeId": "auth",
+        "shape": "auth",
+        "color": "#53acdd",
+        "shortLabel": "认证服务"
+      },
+      {
+        "nodeId": "order",
+        "shape": "shell",
+        "color": "#559eff",
+        "shortLabel": "订单服务"
+      },
+      {
+        "nodeId": "inventory",
+        "shape": "shell",
+        "color": "#4de1b3",
+        "shortLabel": "库存服务"
+      },
+      {
+        "nodeId": "payment",
+        "shape": "shell",
+        "color": "#ac91ff",
+        "shortLabel": "支付服务"
+      },
+      {
+        "nodeId": "order-db",
+        "shape": "database",
+        "color": "#559eff",
+        "shortLabel": "订单库"
+      },
+      {
+        "nodeId": "inventory-db",
+        "shape": "database",
+        "color": "#4de1b3",
+        "shortLabel": "库存库"
+      },
+      {
+        "nodeId": "payment-db",
+        "shape": "database",
+        "color": "#ac91ff",
+        "shortLabel": "支付库"
+      },
+      {
+        "nodeId": "payment-provider",
+        "shape": "external",
+        "color": "#edbf78",
+        "shortLabel": "支付渠道"
+      },
+      {
+        "nodeId": "event-bus",
+        "shape": "event",
+        "color": "#f1b676",
+        "shortLabel": "事件总线"
+      },
+      {
+        "nodeId": "notify",
+        "shape": "service",
+        "color": "#f1b676",
+        "shortLabel": "通知服务"
+      },
+      {
+        "nodeId": "order/receive",
+        "shape": "gateway",
+        "color": "#62dbdf",
+        "shortLabel": "请求入口"
+      },
+      {
+        "nodeId": "order/draft",
+        "shape": "database",
+        "color": "#559eff",
+        "shortLabel": "待支付订单"
+      },
+      {
+        "nodeId": "order/reserve",
+        "shape": "service",
+        "color": "#4de1b3",
+        "shortLabel": "库存预留"
+      },
+      {
+        "nodeId": "order/check",
+        "shape": "decision",
+        "color": "#efc174",
+        "shortLabel": "库存判断"
+      },
+      {
+        "nodeId": "order/payment",
+        "shape": "service",
+        "color": "#ac91ff",
+        "shortLabel": "同步收单"
+      },
+      {
+        "nodeId": "order/result",
+        "shape": "result",
+        "color": "#74bcff",
+        "shortLabel": "订单结果"
+      },
+      {
+        "nodeId": "inventory/receive",
+        "shape": "gateway",
+        "color": "#4de1b3",
+        "shortLabel": "库存入口"
+      },
+      {
+        "nodeId": "inventory/operation",
+        "shape": "decision",
+        "color": "#4de1b3",
+        "shortLabel": "预留 / 释放"
+      },
+      {
+        "nodeId": "inventory/adjust",
+        "shape": "adjust",
+        "color": "#4de1b3",
+        "shortLabel": "库存调整"
+      },
+      {
+        "nodeId": "inventory/state",
+        "shape": "rack",
+        "color": "#4de1b3",
+        "shortLabel": "库存状态"
+      },
+      {
+        "nodeId": "inventory/result",
+        "shape": "result",
+        "color": "#4de1b3",
+        "shortLabel": "返回结果"
+      },
+      {
+        "nodeId": "payment/receive",
+        "shape": "gateway",
+        "color": "#ac91ff",
+        "shortLabel": "支付入口"
+      },
+      {
+        "nodeId": "payment/associate",
+        "shape": "link",
+        "color": "#ac91ff",
+        "shortLabel": "订单与渠道"
+      },
+      {
+        "nodeId": "payment/collect",
+        "shape": "channel",
+        "color": "#ac91ff",
+        "shortLabel": "同步收单"
+      },
+      {
+        "nodeId": "payment/record",
+        "shape": "ledger",
+        "color": "#ac91ff",
+        "shortLabel": "支付流水"
+      },
+      {
+        "nodeId": "payment/result",
+        "shape": "result",
+        "color": "#ac91ff",
+        "shortLabel": "支付结果"
+      }
+    ],
+    "scenarios": [
+      {
+        "id": "success",
+        "label": "正常下单",
+        "steps": [
+          {
+            "id": "client-request",
+            "title": "发起下单",
+            "description": "教学示意：客户端组织下单意图，把请求交给 API 网关。本演示只展示路径，不发送真实请求。",
+            "route": [
+              "customer",
+              "gateway"
+            ],
+            "focusId": "gateway",
+            "tone": "request",
+            "durationMs": 2200
+          },
+          {
+            "id": "gateway-entry",
+            "title": "接入网关",
+            "description": "教学示意：网关承担入口接入和基础检查职责，实际防护配置、限流规则与执行顺序仍需核查。",
+            "route": [
+              "gateway"
+            ],
+            "focusId": "gateway",
+            "tone": "request",
+            "durationMs": 2200
+          },
+          {
+            "id": "identity-check",
+            "title": "身份校验",
+            "description": "教学示意：网关请求认证服务并得到通过结论。这是选定的教学路径，失败鉴权及真实认证协议未展开。",
+            "route": [
+              "gateway",
+              "auth",
+              "gateway"
+            ],
+            "focusId": "auth",
+            "tone": "request",
+            "durationMs": 2200
+          },
+          {
+            "id": "route-order",
+            "title": "进入订单",
+            "description": "教学示意：身份校验通过后，网关把请求交给订单服务的接入职责；展开订单外壳查看内部职责。",
+            "route": [
+              "gateway",
+              "order",
+              "order/receive"
+            ],
+            "focusId": "order/receive",
+            "tone": "request",
+            "durationMs": 2200
+          },
+          {
+            "id": "create-order",
+            "title": "创建待支付订单",
+            "description": "教学示意：接入职责交给初始订单状态职责，并关联外层订单库。不指定真实表结构、事务边界或幂等规则。",
+            "route": [
+              "order/receive",
+              "order/draft",
+              "order-db"
+            ],
+            "focusId": "order/draft",
+            "tone": "data",
+            "durationMs": 2200
+          },
+          {
+            "id": "reserve-stock",
+            "title": "请求预留库存",
+            "description": "教学示意：订单协调职责请求库存服务预留，库存接入职责先识别本次操作是预留，不预先假定此次预留成功。",
+            "route": [
+              "order/draft",
+              "order/reserve",
+              "inventory",
+              "inventory/receive",
+              "inventory/operation"
+            ],
+            "focusId": "inventory/operation",
+            "tone": "request",
+            "durationMs": 2200
+          },
+          {
+            "id": "inspect-stock",
+            "title": "核对库存状态",
+            "description": "教学示意：库存调整职责核对可用状态，并关联外层库存库。此时尚未返回预留结论；库存不足只关联读取结果，不代表成功更新库存。",
+            "route": [
+              "inventory/operation",
+              "inventory/adjust",
+              "inventory/state",
+              "inventory-db",
+              "inventory/state"
+            ],
+            "focusId": "inventory/adjust",
+            "tone": "data",
+            "durationMs": 2200
+          },
+          {
+            "id": "stock-success",
+            "title": "预留成功",
+            "description": "教学示意：库存状态职责把已确定的成功结论交给库存结果职责，再返回订单的库存判断职责。只有此分支允许继续支付；释放仅用于后续支付失败的补偿。",
+            "route": [
+              "inventory/state",
+              "inventory/result",
+              "order/check"
+            ],
+            "focusId": "order/check",
+            "tone": "success",
+            "durationMs": 2200
+          },
+          {
+            "id": "request-payment",
+            "title": "请求同步收单",
+            "description": "教学示意：只有库存预留成功后，订单服务的支付协调职责才请求支付服务，进入支付请求接入职责。",
+            "route": [
+              "order/check",
+              "order/payment",
+              "payment",
+              "payment/receive"
+            ],
+            "focusId": "payment/receive",
+            "tone": "request",
+            "durationMs": 2200
+          },
+          {
+            "id": "prepare-payment",
+            "title": "关联订单与渠道",
+            "description": "教学示意：支付接入职责交给订单与渠道关联职责，组织收单上下文后进入外部收单协调职责。尚未得到渠道的成功或失败结果。",
+            "route": [
+              "payment/receive",
+              "payment/associate",
+              "payment/collect"
+            ],
+            "focusId": "payment/associate",
+            "tone": "request",
+            "durationMs": 2200
+          },
+          {
+            "id": "channel-success",
+            "title": "渠道收单成功",
+            "description": "教学示意：支付服务的收单协调职责请求外层第三方渠道，渠道立即返回明确成功。本场景没有支付处理中、超时或异步回调。",
+            "route": [
+              "payment/collect",
+              "payment-provider",
+              "payment/collect"
+            ],
+            "focusId": "payment-provider",
+            "tone": "success",
+            "durationMs": 2200
+          },
+          {
+            "id": "record-payment",
+            "title": "关联流水与结果",
+            "description": "教学示意：收单协调职责将渠道的确定结果交给流水职责，关联外层支付库，再由支付结果职责交回订单的结果职责。实际写入顺序与可靠性方案仍需核查。",
+            "route": [
+              "payment/collect",
+              "payment/record",
+              "payment-db",
+              "payment/record",
+              "payment/result",
+              "order/result"
+            ],
+            "focusId": "payment/record",
+            "tone": "data",
+            "durationMs": 2200
+          },
+          {
+            "id": "confirm-order",
+            "title": "确认订单",
+            "description": "教学示意：订单的结果职责汇总支付成功并关联确认状态，订单库承载逻辑状态；状态更新与事件发布的可靠性策略未指定。",
+            "route": [
+              "order/result",
+              "order-db"
+            ],
+            "focusId": "order/result",
+            "tone": "success",
+            "durationMs": 2200
+          },
+          {
+            "id": "success-response",
+            "title": "返回下单成功",
+            "description": "教学示意：订单通过网关返回同步成功结果，无需等待异步通知。返回方向为演示编排，不从架构依赖边推断。",
+            "route": [
+              "order",
+              "gateway",
+              "customer"
+            ],
+            "focusId": "customer",
+            "tone": "success",
+            "durationMs": 2200
+          },
+          {
+            "id": "publish-event",
+            "title": "发布确认事件",
+            "description": "教学示意：成功确认后，订单发布确认事件到事件总线。为便于讲解在响应后展示异步侧，这不规定实际发布与响应的先后或投递保证。",
+            "route": [
+              "order",
+              "event-bus"
+            ],
+            "focusId": "event-bus",
+            "tone": "data",
+            "durationMs": 2200
+          },
+          {
+            "id": "notify-user",
+            "title": "异步发送通知",
+            "description": "教学示意：通知服务消费确认事件并组织用户通知；同步成功结果已返回，不等待本步骤。渠道、重试和去重机制尚未指定。",
+            "route": [
+              "event-bus",
+              "notify"
+            ],
+            "focusId": "notify",
+            "tone": "success",
+            "durationMs": 2200
+          }
+        ]
+      },
+      {
+        "id": "out-of-stock",
+        "label": "库存不足",
+        "steps": [
+          {
+            "id": "client-request",
+            "title": "发起下单",
+            "description": "教学示意：客户端组织下单意图，把请求交给 API 网关。本演示只展示路径，不发送真实请求。",
+            "route": [
+              "customer",
+              "gateway"
+            ],
+            "focusId": "gateway",
+            "tone": "request",
+            "durationMs": 2200
+          },
+          {
+            "id": "gateway-entry",
+            "title": "接入网关",
+            "description": "教学示意：网关承担入口接入和基础检查职责，实际防护配置、限流规则与执行顺序仍需核查。",
+            "route": [
+              "gateway"
+            ],
+            "focusId": "gateway",
+            "tone": "request",
+            "durationMs": 2200
+          },
+          {
+            "id": "identity-check",
+            "title": "身份校验",
+            "description": "教学示意：网关请求认证服务并得到通过结论。这是选定的教学路径，失败鉴权及真实认证协议未展开。",
+            "route": [
+              "gateway",
+              "auth",
+              "gateway"
+            ],
+            "focusId": "auth",
+            "tone": "request",
+            "durationMs": 2200
+          },
+          {
+            "id": "route-order",
+            "title": "进入订单",
+            "description": "教学示意：身份校验通过后，网关把请求交给订单服务的接入职责；展开订单外壳查看内部职责。",
+            "route": [
+              "gateway",
+              "order",
+              "order/receive"
+            ],
+            "focusId": "order/receive",
+            "tone": "request",
+            "durationMs": 2200
+          },
+          {
+            "id": "create-order",
+            "title": "创建待支付订单",
+            "description": "教学示意：接入职责交给初始订单状态职责，并关联外层订单库。不指定真实表结构、事务边界或幂等规则。",
+            "route": [
+              "order/receive",
+              "order/draft",
+              "order-db"
+            ],
+            "focusId": "order/draft",
+            "tone": "data",
+            "durationMs": 2200
+          },
+          {
+            "id": "reserve-stock",
+            "title": "请求预留库存",
+            "description": "教学示意：订单协调职责请求库存服务预留，库存接入职责先识别本次操作是预留，不预先假定此次预留成功。",
+            "route": [
+              "order/draft",
+              "order/reserve",
+              "inventory",
+              "inventory/receive",
+              "inventory/operation"
+            ],
+            "focusId": "inventory/operation",
+            "tone": "request",
+            "durationMs": 2200
+          },
+          {
+            "id": "inspect-stock",
+            "title": "核对库存状态",
+            "description": "教学示意：库存调整职责核对可用状态，并关联外层库存库。此时尚未返回预留结论；库存不足只关联读取结果，不代表成功更新库存。",
+            "route": [
+              "inventory/operation",
+              "inventory/adjust",
+              "inventory/state",
+              "inventory-db",
+              "inventory/state"
+            ],
+            "focusId": "inventory/adjust",
+            "tone": "data",
+            "durationMs": 2200
+          },
+          {
+            "id": "stock-shortage",
+            "title": "库存不足",
+            "description": "教学示意：库存状态核对后确定预留未成功，由库存结果职责把不足结论返回订单的库存判断职责。没有已预留库存需要补偿，也不把读取库存状态误认为成功预留。",
+            "route": [
+              "inventory/state",
+              "inventory/result",
+              "order/check"
+            ],
+            "focusId": "order/check",
+            "tone": "failure",
+            "durationMs": 2200
+          },
+          {
+            "id": "cancel-order",
+            "title": "取消待支付订单",
+            "description": "教学示意：订单结果职责取消待支付状态，不请求支付，也不请求释放库存，因为此次预留没有成功。",
+            "route": [
+              "order/check",
+              "order/result",
+              "order-db"
+            ],
+            "focusId": "order/result",
+            "tone": "failure",
+            "durationMs": 2200
+          },
+          {
+            "id": "failure-response",
+            "title": "返回库存不足",
+            "description": "教学示意：取消待支付订单后，通过网关返回库存不足的同步结果。本分支不发布确认事件，也不进入成功通知路径。",
+            "route": [
+              "order",
+              "gateway",
+              "customer"
+            ],
+            "focusId": "customer",
+            "tone": "failure",
+            "durationMs": 2200
+          }
+        ]
+      },
+      {
+        "id": "payment-failed",
+        "label": "支付失败",
+        "steps": [
+          {
+            "id": "client-request",
+            "title": "发起下单",
+            "description": "教学示意：客户端组织下单意图，把请求交给 API 网关。本演示只展示路径，不发送真实请求。",
+            "route": [
+              "customer",
+              "gateway"
+            ],
+            "focusId": "gateway",
+            "tone": "request",
+            "durationMs": 2200
+          },
+          {
+            "id": "gateway-entry",
+            "title": "接入网关",
+            "description": "教学示意：网关承担入口接入和基础检查职责，实际防护配置、限流规则与执行顺序仍需核查。",
+            "route": [
+              "gateway"
+            ],
+            "focusId": "gateway",
+            "tone": "request",
+            "durationMs": 2200
+          },
+          {
+            "id": "identity-check",
+            "title": "身份校验",
+            "description": "教学示意：网关请求认证服务并得到通过结论。这是选定的教学路径，失败鉴权及真实认证协议未展开。",
+            "route": [
+              "gateway",
+              "auth",
+              "gateway"
+            ],
+            "focusId": "auth",
+            "tone": "request",
+            "durationMs": 2200
+          },
+          {
+            "id": "route-order",
+            "title": "进入订单",
+            "description": "教学示意：身份校验通过后，网关把请求交给订单服务的接入职责；展开订单外壳查看内部职责。",
+            "route": [
+              "gateway",
+              "order",
+              "order/receive"
+            ],
+            "focusId": "order/receive",
+            "tone": "request",
+            "durationMs": 2200
+          },
+          {
+            "id": "create-order",
+            "title": "创建待支付订单",
+            "description": "教学示意：接入职责交给初始订单状态职责，并关联外层订单库。不指定真实表结构、事务边界或幂等规则。",
+            "route": [
+              "order/receive",
+              "order/draft",
+              "order-db"
+            ],
+            "focusId": "order/draft",
+            "tone": "data",
+            "durationMs": 2200
+          },
+          {
+            "id": "reserve-stock",
+            "title": "请求预留库存",
+            "description": "教学示意：订单协调职责请求库存服务预留，库存接入职责先识别本次操作是预留，不预先假定此次预留成功。",
+            "route": [
+              "order/draft",
+              "order/reserve",
+              "inventory",
+              "inventory/receive",
+              "inventory/operation"
+            ],
+            "focusId": "inventory/operation",
+            "tone": "request",
+            "durationMs": 2200
+          },
+          {
+            "id": "inspect-stock",
+            "title": "核对库存状态",
+            "description": "教学示意：库存调整职责核对可用状态，并关联外层库存库。此时尚未返回预留结论；库存不足只关联读取结果，不代表成功更新库存。",
+            "route": [
+              "inventory/operation",
+              "inventory/adjust",
+              "inventory/state",
+              "inventory-db",
+              "inventory/state"
+            ],
+            "focusId": "inventory/adjust",
+            "tone": "data",
+            "durationMs": 2200
+          },
+          {
+            "id": "stock-success",
+            "title": "预留成功",
+            "description": "教学示意：库存状态职责把已确定的成功结论交给库存结果职责，再返回订单的库存判断职责。只有此分支允许继续支付；释放仅用于后续支付失败的补偿。",
+            "route": [
+              "inventory/state",
+              "inventory/result",
+              "order/check"
+            ],
+            "focusId": "order/check",
+            "tone": "success",
+            "durationMs": 2200
+          },
+          {
+            "id": "request-payment",
+            "title": "请求同步收单",
+            "description": "教学示意：只有库存预留成功后，订单服务的支付协调职责才请求支付服务，进入支付请求接入职责。",
+            "route": [
+              "order/check",
+              "order/payment",
+              "payment",
+              "payment/receive"
+            ],
+            "focusId": "payment/receive",
+            "tone": "request",
+            "durationMs": 2200
+          },
+          {
+            "id": "prepare-payment",
+            "title": "关联订单与渠道",
+            "description": "教学示意：支付接入职责交给订单与渠道关联职责，组织收单上下文后进入外部收单协调职责。尚未得到渠道的成功或失败结果。",
+            "route": [
+              "payment/receive",
+              "payment/associate",
+              "payment/collect"
+            ],
+            "focusId": "payment/associate",
+            "tone": "request",
+            "durationMs": 2200
+          },
+          {
+            "id": "channel-failure",
+            "title": "渠道收单失败",
+            "description": "教学示意：第三方渠道立即返回明确失败，交回支付服务的收单协调职责。这是确定失败的场景，超时或处理中并未等同于失败。",
+            "route": [
+              "payment/collect",
+              "payment-provider",
+              "payment/collect"
+            ],
+            "focusId": "payment-provider",
+            "tone": "failure",
+            "durationMs": 2200
+          },
+          {
+            "id": "record-payment",
+            "title": "关联流水与结果",
+            "description": "教学示意：收单协调职责将渠道的确定结果交给流水职责，关联外层支付库，再由支付结果职责交回订单的结果职责。实际写入顺序与可靠性方案仍需核查。",
+            "route": [
+              "payment/collect",
+              "payment/record",
+              "payment-db",
+              "payment/record",
+              "payment/result",
+              "order/result"
+            ],
+            "focusId": "payment/record",
+            "tone": "data",
+            "durationMs": 2200
+          },
+          {
+            "id": "cancel-order",
+            "title": "取消待支付订单",
+            "description": "教学示意：订单结果职责收到确定失败并取消待支付状态。这是业务补偿，不等于跨库事务回滚。",
+            "route": [
+              "order/result",
+              "order-db"
+            ],
+            "focusId": "order/result",
+            "tone": "failure",
+            "durationMs": 2200
+          },
+          {
+            "id": "release-stock",
+            "title": "释放已预留库存",
+            "description": "教学示意：取消订单后请求同一个库存服务；接入、操作识别与调整职责改为处理释放，关联外层库存库，再由库存结果职责返回释放结论。这里释放先前成功的预留，释放失败、重试和幂等仍需真实系统设计。",
+            "route": [
+              "order/result",
+              "inventory",
+              "inventory/receive",
+              "inventory/operation",
+              "inventory/adjust",
+              "inventory/state",
+              "inventory-db",
+              "inventory/state",
+              "inventory/result",
+              "order/result"
+            ],
+            "focusId": "inventory/adjust",
+            "tone": "failure",
+            "durationMs": 2200
+          },
+          {
+            "id": "failure-response",
+            "title": "返回支付失败",
+            "description": "教学示意：本选定教学路径在释放库存后，经网关返回支付失败结果；未展示释放失败分支，也不发布确认事件。",
+            "route": [
+              "order",
+              "gateway",
+              "customer"
+            ],
+            "focusId": "customer",
+            "tone": "failure",
+            "durationMs": 2200
+          }
+        ]
+      }
+    ]
+  }
+}

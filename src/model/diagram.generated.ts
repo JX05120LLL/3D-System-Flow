@@ -30,6 +30,20 @@ export interface DiagramDocument {
    * @maxItems 20
    */
   groups: Group[];
+  spatial?: {
+    /**
+     * @maxItems 100
+     */
+    interiors?: Interior[];
+    /**
+     * @maxItems 100
+     */
+    models?: SpatialModel[];
+    /**
+     * @maxItems 20
+     */
+    scenarios?: Scenario[];
+  };
 }
 export interface Node {
   id: NonEmptyText;
@@ -61,4 +75,59 @@ export interface Group {
   label: NonEmptyText;
   parentId?: NonEmptyText;
   details?: Details;
+}
+export interface Interior {
+  owner: NonEmptyText;
+  /**
+   * @minItems 1
+   * @maxItems 100
+   */
+  nodes: Node[];
+  /**
+   * @maxItems 300
+   */
+  edges: Edge[];
+}
+export interface SpatialModel {
+  nodeId: NonEmptyText;
+  shape:
+    | "service"
+    | "shell"
+    | "gateway"
+    | "client"
+    | "database"
+    | "event"
+    | "external"
+    | "auth"
+    | "decision"
+    | "rack"
+    | "adjust"
+    | "link"
+    | "channel"
+    | "ledger"
+    | "result";
+  color?: string;
+  shortLabel?: NonEmptyText;
+}
+export interface Scenario {
+  id: NonEmptyText;
+  label: NonEmptyText;
+  /**
+   * @minItems 1
+   * @maxItems 200
+   */
+  steps: DemoStep[];
+}
+export interface DemoStep {
+  id: NonEmptyText;
+  title: NonEmptyText;
+  description: string;
+  /**
+   * @minItems 1
+   * @maxItems 300
+   */
+  route: NonEmptyText[];
+  focusId: NonEmptyText;
+  tone: "request" | "data" | "success" | "failure";
+  durationMs?: number;
 }

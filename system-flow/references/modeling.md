@@ -1,6 +1,6 @@
 # 图数据与内容建模
 
-结构以 [diagram-schema.json](diagram-schema.json) 为准；本文件解释语义与取舍。原始模型不保存坐标，修改时保留稳定 ID。
+结构以 [diagram-schema.json](diagram-schema.json) 为准；本文件解释语义与取舍。原始模型不保存坐标，修改时保留稳定 ID。2D 与 3D 使用同一 `schemaVersion: "2.0"`；可选空间扩展见 [3D 沙盘建模](spatial.md)。
 
 ## 选择视图与范围
 
@@ -17,15 +17,17 @@
 
 ## 必要字段与引用
 
-- 文档：`schemaVersion: "2.0"`、id、title、view、nodes、edges、groups；description 可选。
+- 文档：`schemaVersion: "2.0"`、id、title、view、nodes、edges、groups；description、spatial 可选。旧图无需新增 spatial；根图字段继续用于 2D。
 - view：kind、direction (`RIGHT|DOWN`)、theme (`light|dark`)；collapsedGroups 为初始折叠组 ID；primaryPath 为按顺序连续的有向边 ID，不指定时不推断主干。
 - node：id、kind、label；可加 summary、details、groupId、evidenceStatus、sources。kind 为 start/end/process/decision/store/external/fork/join。
 - edge：id、source、target、kind、directed；可加 label、details、evidenceStatus、sources。kind 为 control/data/dependency/exception/feedback。
-- group：id、label；可加 parentId、details。节点和组共用 ID 命名空间；边 ID 在文档内唯一。原始边端点只能引用节点。
+- group：id、label；可加 parentId、details。根图、内部图的节点和根分组共用全局唯一 ID；根边与全部内部边的 ID 在文档内唯一。根边端点只能引用根节点；内部边端点只能引用同一内部图节点。
 - sources：`[{ "path": "src/service.ts", "line": 12 }]`。path 是可读的仓库相对引用；不会自动打开文件或执行链接。
 - evidenceStatus：confirmed 表示有依据，assumed 表示假设，planned 表示规划；缺省 assumed。这不是运行状态，也不能把源码中一个概念当成线上服务。
 
 引用原有图片时，区分“图中有这个概念”与“已有实现”。源码、配置、文档或明确需求可以作为依据。没有实际证据的具体调用、失败策略或新增能力分别标 assumed/planned，并在影响理解的可见说明中解释。
+
+`spatial.interiors` 显式提供根节点 owner 的内部组件与关系，只支持单层；归属不依赖 ID 前缀。`spatial.models` 显式选择形态、颜色和短名牌；`spatial.scenarios` 显式编排阅读步骤。三个数组均可省略。内部职责需要同样的 evidenceStatus/sources；步骤说明保留证据或教学假设，不能从依赖关系推导执行 trace，也不能从几何反推真实部署。完整字段与示例见 [空间建模](spatial.md#可选-spatial-字段)。
 
 ## 流程校验
 
@@ -63,7 +65,7 @@ flow 高亮只遍历流程子图；overview/deployment 遍历所有有向关系�
 
 ## 限额与诊断
 
-最多 100 节点、300 边、20 组；至少一个节点。UTF-8 JSON 文件最多 2 MiB；每个 details 最多 8,000 个 Unicode 字符。分组最多两层，不能成环或为空。超限必须报错，不能静默截断。
+根图和全部内部图合计最多 100 节点、300 边；根图最多 20 组且至少一个节点。UTF-8 JSON 文件最多 2 MiB；每个 details 最多 8,000 个 Unicode 字符。根分组最多两层，不能成环或为空；内部节点可引用根图已有 groupId，内部图不另设 groups，也不形成嵌套剖面。超限必须报错，不能静默截断。
 
 固定诊断结构为 `{ code, path, ids, message, severity }`。结构、引用、条件、方向错误阻止生成；不连通或流程不可达警告需要核对并在交付说明。未知字段与版本拒绝读取。
 
@@ -71,7 +73,7 @@ flow 高亮只遍历流程子图；overview/deployment 遍历所有有向关系�
 
 ## 折叠与编辑
 
-原图始终完整；折叠只是可见投影。摘要会提示隐藏判断/条件，跨组条件仍显示；点击摘要或聚合边可读原始关系。父组展开恢复子组之前的折叠状态。静态导出一律全展开。
+2D 原图始终完整；折叠只是可见投影。摘要会提示隐藏判断/条件，跨组条件仍显示；点击摘要或聚合边可读原始关系。父组展开恢复子组之前的折叠状态。2D 静态导出一律全展开。3D 独立剖面只是空间阅读状态，修改内容通过 JSON 重生成；静态输出需从同一 JSON 的 2D HTML 导出，显示根图。
 
 增量修改优先编辑 `.diagram.json` 并保留 ID。只有 v2 HTML 时，可从 `script#blueprint-data` 读取 JSON；不要从当前折叠后的 SVG 反向猜测原图。v1 HTML/SVG 没有完整模型，按语义人工重建或保留旧文件局部修订，不承诺自动无损还原。
 

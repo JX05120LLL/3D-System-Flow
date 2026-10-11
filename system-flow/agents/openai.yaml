@@ -1,4 +1,4 @@
 interface:
   display_name: "System Flow"
-  short_description: "Reviewable software flows and architecture diagrams"
-  default_prompt: "Use $system-flow to map this software system's components, dependencies, and request or data flow from the available evidence. Preserve conditions, directions, sources, and uncertainty in diagram.json; generate offline interactive HTML, inspect its layout and interactions, and export a complete SVG when requested. Choose a readable horizontal or vertical layout, let me review and correct existing diagram properties, and report what was actually verified."
+  short_description: "Software flows, architecture diagrams, and 3D sandboxes"
+  default_prompt: "Use $system-flow to map this software system from evidence, preserve sources and assumptions in diagram.json, generate offline 2D or requested 3D HTML with supported interiors and authored walkthroughs, inspect its interactions, and report actual verification; use 2D for static exports."

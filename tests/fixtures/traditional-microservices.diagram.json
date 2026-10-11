@@ -1,0 +1,216 @@
+{
+  "schemaVersion": "2.0",
+  "id": "traditional-microservices",
+  "title": "传统电商微服务架构 · 服务协作总览",
+  "description": "用户经 API 网关进入订单服务；业务服务与支撑能力分区展示。所有关系均为假设，需按真实系统核查。",
+  "view": {
+    "kind": "overview",
+    "direction": "RIGHT",
+    "theme": "light",
+    "primaryPath": [
+      "request-gateway",
+      "gateway-order"
+    ]
+  },
+  "groups": [],
+  "nodes": [
+    {
+      "id": "customer",
+      "kind": "start",
+      "label": "用户发起下单",
+      "summary": "Web / App",
+      "details": "演示客户端提交下单请求，不对应真实产品入口。",
+      "evidenceStatus": "assumed"
+    },
+    {
+      "id": "gateway",
+      "kind": "process",
+      "label": "API 网关",
+      "summary": "边缘防护 · 鉴权 · 路由",
+      "details": "接收 HTTPS 下单请求；CDN/WAF、限流、认证接入均为典型能力，真实网关部署方式和调用顺序需核查。",
+      "evidenceStatus": "assumed"
+    },
+    {
+      "id": "auth",
+      "kind": "process",
+      "label": "认证服务",
+      "summary": "提供身份校验",
+      "details": "向网关提供身份校验能力。图中不指定 OAuth、会话或令牌实现。",
+      "evidenceStatus": "assumed"
+    },
+    {
+      "id": "order",
+      "kind": "process",
+      "label": "订单服务",
+      "summary": "编排下单并汇总结果",
+      "details": "订单服务创建待支付订单，按预留结果决定是否请求支付，并向客户端返回最终同步结果。库存不足或支付失败时走补偿；详见配套下单流程图。",
+      "evidenceStatus": "assumed"
+    },
+    {
+      "id": "inventory",
+      "kind": "process",
+      "label": "库存服务",
+      "summary": "预留 / 释放库存",
+      "details": "向订单服务返回预留成功或库存不足；支付失败时可收到释放预留请求。锁粒度、幂等和超时回收未在图中指定。",
+      "evidenceStatus": "assumed"
+    },
+    {
+      "id": "payment",
+      "kind": "process",
+      "label": "支付服务",
+      "summary": "同步收单与流水",
+      "details": "关联订单与第三方支付渠道。本示意限定为收单请求立即返回确定成功或失败的同步场景；异步回调、处理中和超时不在图内。",
+      "evidenceStatus": "assumed"
+    },
+    {
+      "id": "order-db",
+      "kind": "store",
+      "label": "订单库",
+      "summary": "订单服务自有数据",
+      "evidenceStatus": "assumed"
+    },
+    {
+      "id": "inventory-db",
+      "kind": "store",
+      "label": "库存库",
+      "summary": "库存服务自有数据",
+      "evidenceStatus": "assumed"
+    },
+    {
+      "id": "payment-db",
+      "kind": "store",
+      "label": "支付库",
+      "summary": "支付服务自有流水",
+      "evidenceStatus": "assumed"
+    },
+    {
+      "id": "payment-provider",
+      "kind": "external",
+      "label": "第三方支付",
+      "summary": "外部收单渠道",
+      "details": "支付服务依赖的外部收单能力。本示意采用立即返回确定结果的场景，未指定供应商。",
+      "evidenceStatus": "assumed"
+    },
+    {
+      "id": "event-bus",
+      "kind": "store",
+      "label": "事件总线",
+      "summary": "订单确认事件",
+      "details": "代表异步消息传递能力，不指定 Kafka、RabbitMQ 等产品，也不承诺具体投递语义。",
+      "evidenceStatus": "assumed"
+    },
+    {
+      "id": "notify",
+      "kind": "process",
+      "label": "通知服务",
+      "summary": "消费事件并发送消息",
+      "details": "订阅订单确认事件并异步向用户发送通知。渠道、重试和去重机制由真实系统决定。",
+      "evidenceStatus": "assumed"
+    }
+  ],
+  "edges": [
+    {
+      "id": "request-gateway",
+      "source": "customer",
+      "target": "gateway",
+      "kind": "control",
+      "directed": true,
+      "label": "HTTPS 下单",
+      "evidenceStatus": "assumed"
+    },
+    {
+      "id": "gateway-order",
+      "source": "gateway",
+      "target": "order",
+      "kind": "control",
+      "directed": true,
+      "label": "鉴权后路由",
+      "evidenceStatus": "assumed"
+    },
+    {
+      "id": "gateway-auth",
+      "source": "gateway",
+      "target": "auth",
+      "kind": "dependency",
+      "directed": true,
+      "label": "校验身份",
+      "evidenceStatus": "assumed"
+    },
+    {
+      "id": "order-inventory",
+      "source": "order",
+      "target": "inventory",
+      "kind": "dependency",
+      "directed": true,
+      "label": "预留库存",
+      "details": "库存服务返回预留结果；支付失败后，订单服务还会请求库存服务释放已预留库存。",
+      "evidenceStatus": "assumed"
+    },
+    {
+      "id": "order-payment",
+      "source": "order",
+      "target": "payment",
+      "kind": "dependency",
+      "directed": true,
+      "label": "预留成功后收单",
+      "details": "仅库存预留成功时发起支付。此教学示意限定第三方渠道同步返回确定结果。",
+      "evidenceStatus": "assumed"
+    },
+    {
+      "id": "order-order-db",
+      "source": "order",
+      "target": "order-db",
+      "kind": "data",
+      "directed": true,
+      "label": "订单状态",
+      "evidenceStatus": "assumed"
+    },
+    {
+      "id": "inventory-inventory-db",
+      "source": "inventory",
+      "target": "inventory-db",
+      "kind": "data",
+      "directed": true,
+      "label": "库存状态",
+      "evidenceStatus": "assumed"
+    },
+    {
+      "id": "payment-payment-db",
+      "source": "payment",
+      "target": "payment-db",
+      "kind": "data",
+      "directed": true,
+      "label": "支付流水",
+      "evidenceStatus": "assumed"
+    },
+    {
+      "id": "payment-provider",
+      "source": "payment",
+      "target": "payment-provider",
+      "kind": "dependency",
+      "directed": true,
+      "label": "收单请求",
+      "details": "支付渠道的同步返回结果详见下单流程图；本图只展示依赖方向。",
+      "evidenceStatus": "assumed"
+    },
+    {
+      "id": "order-event-bus",
+      "source": "order",
+      "target": "event-bus",
+      "kind": "data",
+      "directed": true,
+      "label": "确认后发布",
+      "details": "仅成功确认订单后发布事件；发布可靠性策略未指定。",
+      "evidenceStatus": "assumed"
+    },
+    {
+      "id": "event-bus-notify",
+      "source": "event-bus",
+      "target": "notify",
+      "kind": "data",
+      "directed": true,
+      "label": "异步消费",
+      "evidenceStatus": "assumed"
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#08131e">
+  <title>System Flow · 微服务架构沙盘</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M4 9 16 3l12 6v14l-12 6L4 23Zm0 0 12 7 12-7M16 16v13' fill='none' stroke='%23e4bd7b' stroke-width='2'/%3E%3C/svg%3E">
+  <style>__CSS__</style>
+</head>
+<body>
+  <a class="skip-link" href="#explore-toggle">选择模块</a>
+  <main id="stage" aria-label="微服务三维架构沙盘">
+    <div id="labels"></div>
+    <div id="hover-hint" role="tooltip" hidden></div>
+    <section id="context-card" class="context-card" aria-label="选中模块" hidden>
+      <div class="context-heading"><h1 id="context-title"></h1><button id="more-details" class="icon-button" title="查看完整职责" aria-label="查看完整职责" aria-expanded="false" aria-controls="context-details"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7"/><path d="M10 9v5m0-8v.3"/></svg></button><button id="close-context" class="icon-button" title="取消选择" aria-label="取消选择"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 5 10 10M15 5 5 15"/></svg></button></div>
+      <p id="context-summary"></p>
+      <div class="context-actions" role="group" aria-label="模块操作">
+        <button id="focus-node" class="icon-button" title="聚焦模块" aria-label="聚焦模块" disabled><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 3H3v4m10-4h4v4M3 13v4h4m10-4v4h-4"/><circle cx="10" cy="10" r="2.5"/></svg></button>
+        <button id="toggle-shell" class="icon-button accent-action" title="展开内部组件" aria-label="展开内部组件" aria-expanded="false" hidden><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m10 2 7 4-7 4-7-4Zm-7 9 7 4 7-4M3 15l7 4 7-4"/></svg></button>
+        <span class="action-divider" aria-hidden="true"></span>
+        <button id="show-upstream" class="icon-button" title="查看上游" aria-label="查看上游" aria-pressed="false" disabled><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 16V4m-4 4 4-4 4 4M4 16h12"/></svg></button>
+        <button id="show-downstream" class="icon-button" title="查看下游" aria-label="查看下游" aria-pressed="false" disabled><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4v12m-4-4 4 4 4-4M4 4h12"/></svg></button>
+        <button id="show-all" class="icon-button" title="恢复全部关联" aria-label="恢复全部关联" aria-pressed="true"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="2"/><path d="M10 3v3m0 8v3M3 10h3m8 0h3M5 5l2 2m6 6 2 2M5 15l2-2m6-6 2-2"/></svg></button>
+        <button id="isolate-node" class="icon-button" title="单独查看模块" aria-label="单独查看模块" aria-pressed="false"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m10 5 4 2.5v5L10 15l-4-2.5v-5Zm0 5L6 7.5m4 2.5 4-2.5m-4 2.5v5M3 3v3m0-3h3m11 0h-3m3 0v3M3 17v-3m0 3h3m11 0h-3m3 0v-3"/></svg></button>
+      </div>
+      <div id="context-details" hidden></div>
+    </section>
+    <div id="fallback" hidden><svg viewBox="0 0 32 32" aria-hidden="true"><path d="m16 4 12 7v14l-12 7-12-7V11Zm0 14L4 11m12 7 12-7m-12 7v14"/></svg><strong>3D 暂不可用</strong><p>打开模块选择，仍可查看职责并单步演示。</p></div>
+  </main>
+
+  <header class="scene-hud" aria-label="场景工具">
+    <div class="brand" aria-label="System Flow"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M4 9 16 3l12 6v14l-12 6L4 23Zm0 0 12 7 12-7M16 16v13"/></svg><span>System Flow</span></div>
+    <div class="scene-tools">
+      <button id="back-overview" class="icon-button" title="返回系统总览" aria-label="返回系统总览" hidden><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m11 4-6 6 6 6M5 10h11"/></svg></button>
+      <div class="view-controls" role="group" aria-label="视图模式">
+        <button id="spatial-view" class="icon-button" title="立体视角" aria-label="立体视角" aria-pressed="true"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m10 2 7 4v8l-7 4-7-4V6Zm0 8L3 6m7 4 7-4m-7 4v8"/></svg></button>
+        <button id="flat-view" class="icon-button" title="俯视视角" aria-label="俯视视角" aria-pressed="false"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m10 3 7 4-7 4-7-4Zm-7 9 7 4 7-4"/></svg></button>
+      </div>
+      <button id="reset-view" class="icon-button" title="视角复位" aria-label="视角复位"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 8a6 6 0 1 1 0 5M4 3v5h5"/></svg></button>
+      <button id="fullscreen-view" class="icon-button" title="全屏" aria-label="全屏" aria-pressed="false"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 3H3v4m10-4h4v4M3 13v4h4m10-4v4h-4"/></svg></button>
+      <button id="explore-toggle" class="icon-button" title="选择模块" aria-label="选择模块" aria-expanded="false" aria-controls="explorer"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="3" width="5" height="5" rx=".5"/><rect x="12" y="3" width="5" height="5" rx=".5"/><rect x="3" y="12" width="5" height="5" rx=".5"/><rect x="12" y="12" width="5" height="5" rx=".5"/></svg></button>
+    </div>
+  </header>
+  <section id="explorer" class="explorer" aria-label="模块选择" hidden>
+    <div class="explorer-heading"><label for="node-select">选择模块</label><button id="explorer-close" class="icon-button" title="关闭模块选择" aria-label="关闭模块选择"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 5 10 10M15 5 5 15"/></svg></button></div>
+    <select id="node-select"><option value="">选择一个模块</option></select>
+  </section>
+
+  <section id="demo-dock" class="demo-dock" aria-label="下单演示">
+    <label class="scenario-field" for="demo-scenario"><span class="sr-only">演示场景</span><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 6h14M3 10h9M3 14h5m7-1 3 3-3 3m3-3h-7"/></svg><select id="demo-scenario"><option value="success">正常下单</option><option value="out-of-stock">库存不足</option><option value="payment-failed">支付失败</option></select></label>
+    <div class="playback-controls" role="group" aria-label="播放控制">
+      <button id="demo-back" class="icon-button" title="上一步" aria-label="上一步" disabled><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 4v12m10-12L7 10l8 6Z"/></svg></button>
+      <button id="demo-play" class="icon-button play-button" title="开始播放" aria-label="开始播放" data-state="idle"><svg class="play-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="m7 4 9 6-9 6Z"/></svg><svg class="pause-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M7 4v12m6-12v12"/></svg><svg class="replay-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 8a6 6 0 1 1 0 5M4 3v5h5"/></svg><span class="sr-only">开始播放</span></button>
+      <button id="demo-step" class="icon-button" title="下一步" aria-label="下一步"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M15 4v12M5 4l8 6-8 6Z"/></svg></button>
+      <button id="demo-reset" class="icon-button" title="重置演示" aria-label="重置演示"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 8a6 6 0 1 1 0 5M4 3v5h5"/></svg></button>
+    </div>
+    <div class="demo-state"><span id="demo-status">待开始</span><span id="demo-counter">0 / 0</span></div>
+    <progress id="demo-progress" max="1" value="0" aria-label="演示进度"></progress>
+    <div class="sr-only" aria-live="polite"><h2 id="demo-title">下单演示</h2><p id="demo-description">开始播放或单步查看下单流程。</p></div>
+  </section>
+  <footer class="scene-status"><span id="view-label">系统总览</span><span class="teaching-badge">教学示意</span></footer>
+  <script>__JS__</script>
+  <!-- Three.js MIT license:
+__LICENSE__
+  -->
+</body>
+</html>

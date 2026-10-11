@@ -82,9 +82,10 @@ var require_equal = __commonJS({
     exports.default = equal;
   }
 });
-var func2 = require_ucs2length().default;
+var func3 = require_ucs2length().default;
 var func0 = require_equal().default;
 var pattern0 = new RegExp("\\S", "u");
+var pattern16 = new RegExp("^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$", "u");
 
 // src/model/validate.ts
 var MAX_DOCUMENT_BYTES = 2 * 1024 * 1024;
@@ -379,6 +380,9 @@ runCli(async () => {
   }
   await checkOutput(options.output, options.overwrite, options.input);
   const html = await readInput(options.input);
+  if (/<html\b[^>]*\bdata-system-flow-renderer\s*=\s*["']3d["']/i.test(html)) {
+    throw new InputError("3D HTML \u6682\u4E0D\u652F\u6301 SVG/PNG/JPEG \u81EA\u52A8\u5BFC\u51FA\uFF1B\u8BF7\u7528\u540C\u4E00\u56FE\u6570\u636E\u751F\u6210 --renderer 2d \u540E\u5BFC\u51FA\u3002");
+  }
   const { chromium } = await loadPlaywright();
   const browser = await chromium.launch({ channel: "chromium", args: ["--disable-gpu"] });
   try {

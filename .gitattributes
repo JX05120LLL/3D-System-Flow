@@ -12,5 +12,9 @@
 *.py text eol=lf
 *.txt text eol=lf
 *.png binary
+*.gif binary
 *.jpg binary
 *.zip binary
+
+# Upstream Three.js shader strings retain whitespace; deterministic build checks verify this bundle.
+system-flow/assets/spatial.js -whitespace

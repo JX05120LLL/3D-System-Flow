@@ -21,6 +21,33 @@ function schemaDiagnostic(error: ErrorObject): Diagnostic {
   };
 }
 
+type AddDiagnostic = (code: string, path: string, ids: string[], message: string, severity?: Diagnostic['severity']) => void;
+
+function validateBranches(document: DiagramDocument, add: AddDiagnostic, prefix = ''): void {
+  const index = buildGraphIndex(document);
+  document.nodes.forEach((node, i) => {
+    const outgoing = index.outgoing.get(node.id) ?? [];
+    if (node.kind === 'decision') {
+      const branches = outgoing.filter(isFlowEdge);
+      if (branches.length < 2) add('DECISION_BRANCH_COUNT', `${prefix}/nodes/${i}/kind`, [node.id], 'decision 在流程子图中至少需要两个出口，data/dependency 不计入。');
+      const conditions = new Set<string>();
+      for (const edge of branches) {
+        const label = edge.label?.trim();
+        const path = `${prefix}/edges/${document.edges.indexOf(edge)}/label`;
+        if (!label) add('DECISION_CONDITION_MISSING', path, [node.id, edge.id], '判断出口必须有非空条件，不能自动推断是或否。');
+        else if (conditions.has(label)) add('DECISION_CONDITION_DUPLICATE', path, [node.id, edge.id], '同一判断节点的出口条件必须可区分。');
+        if (label) conditions.add(label);
+      }
+    }
+    if (node.kind === 'fork' && outgoing.filter((edge) => edge.kind === 'control').length < 2) {
+      add('FORK_BRANCH_COUNT', `${prefix}/nodes/${i}/kind`, [node.id], 'fork 至少需要两个 control 出口。');
+    }
+    if (node.kind === 'join' && (index.incoming.get(node.id) ?? []).filter((edge) => edge.kind === 'control').length < 2) {
+      add('JOIN_BRANCH_COUNT', `${prefix}/nodes/${i}/kind`, [node.id], 'join 至少需要两个 control 入口。');
+    }
+  });
+}
+
 /** Does not apply defaults, remove properties, mutate input, or compile schema at runtime. */
 export function validateDocument(input: unknown): ValidationResult {
   const diagnostics: Diagnostic[] = [];
@@ -82,27 +109,7 @@ export function validateDocument(input: unknown): ValidationResult {
   document.groups.forEach((group, i) => {
     if (!index.groupMembers.get(group.id)?.size) add('GROUP_EMPTY', `/groups/${i}`, [group.id], '分组必须直接或通过子组包含节点。');
   });
-  document.nodes.forEach((node, i) => {
-    const outgoing = index.outgoing.get(node.id) ?? [];
-    if (node.kind === 'decision') {
-      const branches = outgoing.filter(isFlowEdge);
-      if (branches.length < 2) add('DECISION_BRANCH_COUNT', `/nodes/${i}/kind`, [node.id], 'decision 在流程子图中至少需要两个出口，data/dependency 不计入。');
-      const conditions = new Set<string>();
-      for (const edge of branches) {
-        const label = edge.label?.trim();
-        const edgeIndex = document.edges.indexOf(edge);
-        if (!label) add('DECISION_CONDITION_MISSING', `/edges/${edgeIndex}/label`, [node.id, edge.id], '判断出口必须有非空条件，不能自动推断是或否。');
-        else if (conditions.has(label)) add('DECISION_CONDITION_DUPLICATE', `/edges/${edgeIndex}/label`, [node.id, edge.id], '同一判断节点的出口条件必须可区分。');
-        if (label) conditions.add(label);
-      }
-    }
-    if (node.kind === 'fork' && outgoing.filter((edge) => edge.kind === 'control').length < 2) {
-      add('FORK_BRANCH_COUNT', `/nodes/${i}/kind`, [node.id], 'fork 至少需要两个 control 出口。');
-    }
-    if (node.kind === 'join' && (index.incoming.get(node.id) ?? []).filter((edge) => edge.kind === 'control').length < 2) {
-      add('JOIN_BRANCH_COUNT', `/nodes/${i}/kind`, [node.id], 'join 至少需要两个 control 入口。');
-    }
-  });
+  validateBranches(document, add);
   const seenPrimary = new Set<string>();
   let previous: DiagramEdge | undefined;
   (document.view.primaryPath ?? []).forEach((id, i) => {
@@ -117,6 +124,63 @@ export function validateDocument(input: unknown): ValidationResult {
   });
   (document.view.collapsedGroups ?? []).forEach((id, i) => {
     if (!groups.has(id)) add('COLLAPSED_GROUP_MISSING', `/view/collapsedGroups/${i}`, [id], '初始折叠状态引用的组不存在。');
+  });
+  const interiors = document.spatial?.interiors ?? [];
+  const globalNodeIds = new Set(nodeIds);
+  const owners = new Set<string>();
+  let totalNodes = document.nodes.length;
+  let totalEdges = document.edges.length;
+  interiors.forEach((interior, i) => {
+    const prefix = `/spatial/interiors/${i}`;
+    if (!nodeIds.has(interior.owner)) add('SPATIAL_OWNER_MISSING', `${prefix}/owner`, [interior.owner], '剖面 owner 必须引用总览节点。');
+    if (owners.has(interior.owner)) add('SPATIAL_OWNER_DUPLICATE', `${prefix}/owner`, [interior.owner], '同一个总览节点只能定义一个剖面。');
+    owners.add(interior.owner);
+    totalNodes += interior.nodes.length;
+    totalEdges += interior.edges.length;
+    const localIds = new Set(interior.nodes.map(node => node.id));
+    interior.nodes.forEach((node, j) => {
+      if (objectIds.has(node.id)) add('ID_DUPLICATE', `${prefix}/nodes/${j}/id`, [node.id], '总览、组和所有剖面的节点 ID 必须在同一命名空间内唯一。');
+      objectIds.add(node.id);
+      globalNodeIds.add(node.id);
+      if (node.groupId && !groups.has(node.groupId)) add('NODE_GROUP_MISSING', `${prefix}/nodes/${j}/groupId`, [node.id, node.groupId], '内部节点引用的分组不存在。');
+    });
+    interior.edges.forEach((edge, j) => {
+      const path = `${prefix}/edges/${j}`;
+      if (edgeIds.has(edge.id)) add('EDGE_ID_DUPLICATE', `${path}/id`, [edge.id], '总览和所有剖面的边 ID 必须在文档内唯一。');
+      edgeIds.add(edge.id);
+      if (!localIds.has(edge.source)) add('EDGE_SOURCE_MISSING', `${path}/source`, [edge.id, edge.source], '内部边的 source 必须引用同一剖面的节点。');
+      if (!localIds.has(edge.target)) add('EDGE_TARGET_MISSING', `${path}/target`, [edge.id, edge.target], '内部边的 target 必须引用同一剖面的节点。');
+      if (isFlowEdge(edge) && !edge.directed) add('FLOW_EDGE_UNDIRECTED', `${path}/directed`, [edge.id], 'control、exception 和 feedback 流程边必须有明确方向。');
+    });
+    validateBranches({ ...document, nodes: interior.nodes, edges: interior.edges, groups: [] }, add, prefix);
+  });
+  if (totalNodes > 100) add('SPATIAL_NODE_LIMIT', '/spatial/interiors', [], '总览和所有剖面合计最多 100 个节点。');
+  if (totalEdges > 300) add('SPATIAL_EDGE_LIMIT', '/spatial/interiors', [], '总览和所有剖面合计最多 300 条边。');
+  const modelIds = new Set<string>();
+  (document.spatial?.models ?? []).forEach((model, i) => {
+    const path = `/spatial/models/${i}/nodeId`;
+    if (!globalNodeIds.has(model.nodeId)) add('SPATIAL_MODEL_NODE_MISSING', path, [model.nodeId], '模型必须引用已有总览或内部节点。');
+    if (modelIds.has(model.nodeId)) add('SPATIAL_MODEL_DUPLICATE', path, [model.nodeId], '同一节点只能定义一个模型外观。');
+    modelIds.add(model.nodeId);
+  });
+  const scenarioIds = new Set<string>();
+  (document.spatial?.scenarios ?? []).forEach((scenario, i) => {
+    const path = `/spatial/scenarios/${i}`;
+    if (scenarioIds.has(scenario.id)) add('SPATIAL_SCENARIO_DUPLICATE', `${path}/id`, [scenario.id], '演示场景 ID 必须唯一。');
+    scenarioIds.add(scenario.id);
+    const stepIds = new Set<string>();
+    let durationMs = 0;
+    scenario.steps.forEach((step, j) => {
+      const stepPath = `${path}/steps/${j}`;
+      if (stepIds.has(step.id)) add('SPATIAL_STEP_DUPLICATE', `${stepPath}/id`, [scenario.id, step.id], '同一场景的步骤 ID 必须唯一。');
+      stepIds.add(step.id);
+      step.route.forEach((id, k) => {
+        if (!globalNodeIds.has(id)) add('SPATIAL_ROUTE_NODE_MISSING', `${stepPath}/route/${k}`, [scenario.id, step.id, id], '演示路径必须引用已有总览或内部节点。');
+      });
+      if (!globalNodeIds.has(step.focusId)) add('SPATIAL_FOCUS_NODE_MISSING', `${stepPath}/focusId`, [scenario.id, step.id, step.focusId], '演示焦点必须引用已有总览或内部节点。');
+      durationMs += step.durationMs ?? 2200;
+    });
+    if (!Number.isSafeInteger(durationMs)) add('SPATIAL_DURATION_LIMIT', `${path}/steps`, [scenario.id], '场景总时长不能超过安全整数范围。');
   });
   // A disconnected graph is useful in some comparisons; report rather than discard it.
   if (diagnostics.length === 0) {

@@ -56,7 +56,9 @@ try {
     }
   }
   const schema = await json(join(repositoryRoot, 'system-flow/references/diagram-schema.json'));
-  assert.equal(schema.properties.schemaVersion.const, root.pkg.version.split('.').slice(0, 2).join('.'), 'Schema major/minor differs from package version');
+  // The document contract can stay at 2.0 across compatible 2.x Skill releases.
+  assert.match(schema.properties.schemaVersion.const, /^\d+\.\d+$/, 'Schema requires a major.minor version');
+  assert.equal(schema.properties.schemaVersion.const.split('.')[0], root.pkg.version.split('.')[0], 'Schema major differs from package version');
   report.checks.push('exact package versions, lockfiles, installed direct dependencies, Node 24, matching Playwright and schema versions');
   temp = await mkdtemp(join(tmpdir(), 'system-flow-build-check-'));
   const files = await buildProject({ outputRoot: temp, logLevel: 'silent' });

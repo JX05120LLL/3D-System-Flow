@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>System Flow · 微服务 2.5D 原型</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M4 9 16 3l12 6v14l-12 6L4 23Zm0 0 12 7 12-7M16 16v13' fill='none' stroke='%232563eb' stroke-width='2'/%3E%3C/svg%3E">
+  <style>__CSS__</style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M4 9 16 3l12 6v14l-12 6L4 23Zm0 0 12 7 12-7M16 16v13"/></svg><span>System Flow <small>空间阅读原型</small></span></div>
+    <div class="view-controls" aria-label="视图模式">
+      <button id="flat-view" aria-pressed="false"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="4" width="14" height="12" rx="1"/><path d="M3 8h14"/></svg>平面</button>
+      <button id="spatial-view" aria-pressed="true"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m10 2 7 4v8l-7 4-7-4V6Zm0 8L3 6m7 4 7-4m-7 4v8"/></svg>立体</button>
+    </div>
+    <button id="reset-view" class="reset-button"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 8a6 6 0 1 1 0 5M4 3v5h5"/></svg>视角复位</button>
+  </header>
+  <main class="workspace">
+    <section class="canvas-section" aria-label="微服务架构画布">
+      <nav class="breadcrumbs" aria-label="模块路径"><button id="back-overview" hidden>← 系统总览</button><span id="breadcrumb-divider" hidden>/</span><span id="breadcrumb-current">系统总览</span><span class="teaching-badge">教学示意</span></nav>
+      <div class="canvas-heading"><div><span id="scene-eyebrow" class="eyebrow">MICROSERVICES / OVERVIEW</span><h1 id="scene-title">从请求到服务，再到数据。</h1><p id="scene-description">传统电商微服务架构 · 点击模块，进入内部结构。</p></div><span id="diagram-count" class="diagram-count">12 节点 / 11 连接</span></div>
+      <div id="stage"><div id="labels"></div><div id="fallback" hidden>当前浏览器无法启用 WebGL。可以使用右侧节点列表查看职责与关系。</div></div>
+      <div class="canvas-footer"><span id="gesture-hint">拖动画布旋转 · 滚轮缩放 · 右键平移</span><span class="mode-note"><span class="status-dot"></span><span id="mode-label">分层立体视图</span></span></div>
+    </section>
+    <aside class="inspector" aria-label="节点详情">
+      <div class="inspector-heading"><span class="eyebrow">EXPLORE THE SYSTEM</span><h2 id="inspector-title">模块与关系</h2></div>
+      <label id="select-label" class="select-label" for="node-select">选择模块</label><select id="node-select"><option value="">从一个模块开始</option></select>
+      <div id="details" aria-live="polite"></div>
+      <button id="enter-module" class="enter-button" disabled>进入模块内部 →</button>
+      <button id="focus-node" class="focus-button" disabled><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 3H3v4m10-4h4v4M3 13v4h4m10-4v4h-4"/><circle cx="10" cy="10" r="3"/></svg>聚焦节点</button>
+      <div class="highlight-section"><h3>关联范围</h3><div class="highlight-controls" aria-label="上下游高亮"><button id="show-all" aria-pressed="true">全部</button><button id="show-upstream" aria-pressed="false" disabled>上游</button><button id="show-downstream" aria-pressed="false" disabled>下游</button></div><p id="highlight-summary">选择节点后，可沿连接方向查看关联。</p></div>
+      <div id="connections"></div>
+      <div class="inspector-footnote"><strong>教学示意，关系待核查</strong><p id="evidence-note">总览来自现有示例；内部结构是教学拆解，需核查。</p></div>
+    </aside>
+  </main>
+  <script>__JS__</script>
+  <!-- Three.js MIT license:
+__LICENSE__
+  -->
+</body>
+</html>

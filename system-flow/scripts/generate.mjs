@@ -82,8 +82,9 @@ var require_equal = __commonJS({
   }
 });
 var stdin_default = validate10;
-var schema11 = { "$schema": "http://json-schema.org/draft-07/schema#", "$id": "https://system-blueprint.local/schema/2.0/diagram.json", "title": "DiagramDocument", "type": "object", "additionalProperties": false, "required": ["schemaVersion", "id", "title", "view", "nodes", "edges", "groups"], "properties": { "schemaVersion": { "const": "2.0", "type": "string" }, "id": { "$ref": "#/definitions/nonEmptyText" }, "title": { "$ref": "#/definitions/nonEmptyText" }, "description": { "type": "string" }, "view": { "type": "object", "additionalProperties": false, "required": ["kind", "direction", "theme"], "properties": { "kind": { "enum": ["overview", "flow", "deployment"] }, "direction": { "enum": ["RIGHT", "DOWN"] }, "theme": { "enum": ["light", "dark"] }, "collapsedGroups": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/definitions/nonEmptyText" } }, "primaryPath": { "type": "array", "items": { "$ref": "#/definitions/nonEmptyText" } } } }, "nodes": { "type": "array", "minItems": 1, "maxItems": 100, "items": { "$ref": "#/definitions/node" } }, "edges": { "type": "array", "maxItems": 300, "items": { "$ref": "#/definitions/edge" } }, "groups": { "type": "array", "maxItems": 20, "items": { "$ref": "#/definitions/group" } } }, "definitions": { "nonEmptyText": { "type": "string", "minLength": 1, "pattern": "\\S" }, "details": { "type": "string", "maxLength": 8e3 }, "evidenceStatus": { "enum": ["confirmed", "assumed", "planned"] }, "source": { "type": "object", "additionalProperties": false, "required": ["path"], "properties": { "path": { "$ref": "#/definitions/nonEmptyText" }, "line": { "type": "integer", "minimum": 1 } } }, "sources": { "type": "array", "items": { "$ref": "#/definitions/source" } }, "node": { "type": "object", "additionalProperties": false, "required": ["id", "kind", "label"], "properties": { "id": { "$ref": "#/definitions/nonEmptyText" }, "kind": { "enum": ["start", "end", "process", "decision", "store", "external", "fork", "join"] }, "label": { "$ref": "#/definitions/nonEmptyText" }, "summary": { "type": "string" }, "details": { "$ref": "#/definitions/details" }, "groupId": { "$ref": "#/definitions/nonEmptyText" }, "evidenceStatus": { "$ref": "#/definitions/evidenceStatus" }, "sources": { "$ref": "#/definitions/sources" } } }, "edge": { "type": "object", "additionalProperties": false, "required": ["id", "source", "target", "kind", "directed"], "properties": { "id": { "$ref": "#/definitions/nonEmptyText" }, "source": { "$ref": "#/definitions/nonEmptyText" }, "target": { "$ref": "#/definitions/nonEmptyText" }, "kind": { "enum": ["control", "data", "dependency", "exception", "feedback"] }, "directed": { "type": "boolean" }, "label": { "type": "string" }, "details": { "$ref": "#/definitions/details" }, "evidenceStatus": { "$ref": "#/definitions/evidenceStatus" }, "sources": { "$ref": "#/definitions/sources" } } }, "group": { "type": "object", "additionalProperties": false, "required": ["id", "label"], "properties": { "id": { "$ref": "#/definitions/nonEmptyText" }, "label": { "$ref": "#/definitions/nonEmptyText" }, "parentId": { "$ref": "#/definitions/nonEmptyText" }, "details": { "$ref": "#/definitions/details" } } } } };
-var func2 = require_ucs2length().default;
+var schema11 = { "$schema": "http://json-schema.org/draft-07/schema#", "$id": "https://system-blueprint.local/schema/2.0/diagram.json", "title": "DiagramDocument", "type": "object", "additionalProperties": false, "required": ["schemaVersion", "id", "title", "view", "nodes", "edges", "groups"], "properties": { "schemaVersion": { "const": "2.0", "type": "string" }, "id": { "$ref": "#/definitions/nonEmptyText" }, "title": { "$ref": "#/definitions/nonEmptyText" }, "description": { "type": "string" }, "view": { "type": "object", "additionalProperties": false, "required": ["kind", "direction", "theme"], "properties": { "kind": { "enum": ["overview", "flow", "deployment"] }, "direction": { "enum": ["RIGHT", "DOWN"] }, "theme": { "enum": ["light", "dark"] }, "collapsedGroups": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/definitions/nonEmptyText" } }, "primaryPath": { "type": "array", "items": { "$ref": "#/definitions/nonEmptyText" } } } }, "nodes": { "type": "array", "minItems": 1, "maxItems": 100, "items": { "$ref": "#/definitions/node" } }, "edges": { "type": "array", "maxItems": 300, "items": { "$ref": "#/definitions/edge" } }, "groups": { "type": "array", "maxItems": 20, "items": { "$ref": "#/definitions/group" } }, "spatial": { "type": "object", "additionalProperties": false, "properties": { "interiors": { "type": "array", "maxItems": 100, "items": { "$ref": "#/definitions/interior" } }, "models": { "type": "array", "maxItems": 100, "items": { "$ref": "#/definitions/spatialModel" } }, "scenarios": { "type": "array", "maxItems": 20, "items": { "$ref": "#/definitions/scenario" } } } } }, "definitions": { "nonEmptyText": { "type": "string", "minLength": 1, "pattern": "\\S" }, "details": { "type": "string", "maxLength": 8e3 }, "evidenceStatus": { "enum": ["confirmed", "assumed", "planned"] }, "source": { "type": "object", "additionalProperties": false, "required": ["path"], "properties": { "path": { "$ref": "#/definitions/nonEmptyText" }, "line": { "type": "integer", "minimum": 1 } } }, "sources": { "type": "array", "items": { "$ref": "#/definitions/source" } }, "node": { "type": "object", "additionalProperties": false, "required": ["id", "kind", "label"], "properties": { "id": { "$ref": "#/definitions/nonEmptyText" }, "kind": { "enum": ["start", "end", "process", "decision", "store", "external", "fork", "join"] }, "label": { "$ref": "#/definitions/nonEmptyText" }, "summary": { "type": "string" }, "details": { "$ref": "#/definitions/details" }, "groupId": { "$ref": "#/definitions/nonEmptyText" }, "evidenceStatus": { "$ref": "#/definitions/evidenceStatus" }, "sources": { "$ref": "#/definitions/sources" } } }, "edge": { "type": "object", "additionalProperties": false, "required": ["id", "source", "target", "kind", "directed"], "properties": { "id": { "$ref": "#/definitions/nonEmptyText" }, "source": { "$ref": "#/definitions/nonEmptyText" }, "target": { "$ref": "#/definitions/nonEmptyText" }, "kind": { "enum": ["control", "data", "dependency", "exception", "feedback"] }, "directed": { "type": "boolean" }, "label": { "type": "string" }, "details": { "$ref": "#/definitions/details" }, "evidenceStatus": { "$ref": "#/definitions/evidenceStatus" }, "sources": { "$ref": "#/definitions/sources" } } }, "interior": { "type": "object", "additionalProperties": false, "required": ["owner", "nodes", "edges"], "properties": { "owner": { "$ref": "#/definitions/nonEmptyText" }, "nodes": { "type": "array", "minItems": 1, "maxItems": 100, "items": { "$ref": "#/definitions/node" } }, "edges": { "type": "array", "maxItems": 300, "items": { "$ref": "#/definitions/edge" } } } }, "spatialModel": { "type": "object", "additionalProperties": false, "required": ["nodeId", "shape"], "properties": { "nodeId": { "$ref": "#/definitions/nonEmptyText" }, "shape": { "enum": ["service", "shell", "gateway", "client", "database", "event", "external", "auth", "decision", "rack", "adjust", "link", "channel", "ledger", "result"] }, "color": { "type": "string", "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$" }, "shortLabel": { "$ref": "#/definitions/nonEmptyText" } } }, "scenario": { "type": "object", "additionalProperties": false, "required": ["id", "label", "steps"], "properties": { "id": { "$ref": "#/definitions/nonEmptyText" }, "label": { "$ref": "#/definitions/nonEmptyText" }, "steps": { "type": "array", "minItems": 1, "maxItems": 200, "items": { "$ref": "#/definitions/demoStep" } } } }, "demoStep": { "type": "object", "additionalProperties": false, "required": ["id", "title", "description", "route", "focusId", "tone"], "properties": { "id": { "$ref": "#/definitions/nonEmptyText" }, "title": { "$ref": "#/definitions/nonEmptyText" }, "description": { "type": "string" }, "route": { "type": "array", "minItems": 1, "maxItems": 300, "items": { "$ref": "#/definitions/nonEmptyText" } }, "focusId": { "$ref": "#/definitions/nonEmptyText" }, "tone": { "enum": ["request", "data", "success", "failure"] }, "durationMs": { "type": "integer", "minimum": 1, "maximum": 9007199254740991 } } }, "group": { "type": "object", "additionalProperties": false, "required": ["id", "label"], "properties": { "id": { "$ref": "#/definitions/nonEmptyText" }, "label": { "$ref": "#/definitions/nonEmptyText" }, "parentId": { "$ref": "#/definitions/nonEmptyText" }, "details": { "$ref": "#/definitions/details" } } } } };
+var func2 = Object.prototype.hasOwnProperty;
+var func3 = require_ucs2length().default;
 var func0 = require_equal().default;
 var pattern0 = new RegExp("\\S", "u");
 var schema16 = { "type": "object", "additionalProperties": false, "required": ["id", "kind", "label"], "properties": { "id": { "$ref": "#/definitions/nonEmptyText" }, "kind": { "enum": ["start", "end", "process", "decision", "store", "external", "fork", "join"] }, "label": { "$ref": "#/definitions/nonEmptyText" }, "summary": { "type": "string" }, "details": { "$ref": "#/definitions/details" }, "groupId": { "$ref": "#/definitions/nonEmptyText" }, "evidenceStatus": { "$ref": "#/definitions/evidenceStatus" }, "sources": { "$ref": "#/definitions/sources" } } };
@@ -115,7 +116,7 @@ function validate13(data, { instancePath = "", parentData, parentDataProperty, r
     if (data.path !== void 0) {
       let data0 = data.path;
       if (typeof data0 === "string") {
-        if (func2(data0) < 1) {
+        if (func3(data0) < 1) {
           const err2 = { instancePath: instancePath + "/path", schemaPath: "#/definitions/nonEmptyText/minLength", keyword: "minLength", params: { limit: 1 }, message: "must NOT have fewer than 1 characters" };
           if (vErrors === null) {
             vErrors = [err2];
@@ -246,7 +247,7 @@ function validate11(data, { instancePath = "", parentData, parentDataProperty, r
     if (data.id !== void 0) {
       let data0 = data.id;
       if (typeof data0 === "string") {
-        if (func2(data0) < 1) {
+        if (func3(data0) < 1) {
           const err4 = { instancePath: instancePath + "/id", schemaPath: "#/definitions/nonEmptyText/minLength", keyword: "minLength", params: { limit: 1 }, message: "must NOT have fewer than 1 characters" };
           if (vErrors === null) {
             vErrors = [err4];
@@ -289,7 +290,7 @@ function validate11(data, { instancePath = "", parentData, parentDataProperty, r
     if (data.label !== void 0) {
       let data2 = data.label;
       if (typeof data2 === "string") {
-        if (func2(data2) < 1) {
+        if (func3(data2) < 1) {
           const err8 = { instancePath: instancePath + "/label", schemaPath: "#/definitions/nonEmptyText/minLength", keyword: "minLength", params: { limit: 1 }, message: "must NOT have fewer than 1 characters" };
           if (vErrors === null) {
             vErrors = [err8];
@@ -331,7 +332,7 @@ function validate11(data, { instancePath = "", parentData, parentDataProperty, r
     if (data.details !== void 0) {
       let data4 = data.details;
       if (typeof data4 === "string") {
-        if (func2(data4) > 8e3) {
+        if (func3(data4) > 8e3) {
           const err12 = { instancePath: instancePath + "/details", schemaPath: "#/definitions/details/maxLength", keyword: "maxLength", params: { limit: 8e3 }, message: "must NOT have more than 8000 characters" };
           if (vErrors === null) {
             vErrors = [err12];
@@ -353,7 +354,7 @@ function validate11(data, { instancePath = "", parentData, parentDataProperty, r
     if (data.groupId !== void 0) {
       let data5 = data.groupId;
       if (typeof data5 === "string") {
-        if (func2(data5) < 1) {
+        if (func3(data5) < 1) {
           const err14 = { instancePath: instancePath + "/groupId", schemaPath: "#/definitions/nonEmptyText/minLength", keyword: "minLength", params: { limit: 1 }, message: "must NOT have fewer than 1 characters" };
           if (vErrors === null) {
             vErrors = [err14];
@@ -412,7 +413,6 @@ function validate11(data, { instancePath = "", parentData, parentDataProperty, r
   return errors === 0;
 }
 var schema25 = { "type": "object", "additionalProperties": false, "required": ["id", "source", "target", "kind", "directed"], "properties": { "id": { "$ref": "#/definitions/nonEmptyText" }, "source": { "$ref": "#/definitions/nonEmptyText" }, "target": { "$ref": "#/definitions/nonEmptyText" }, "kind": { "enum": ["control", "data", "dependency", "exception", "feedback"] }, "directed": { "type": "boolean" }, "label": { "type": "string" }, "details": { "$ref": "#/definitions/details" }, "evidenceStatus": { "$ref": "#/definitions/evidenceStatus" }, "sources": { "$ref": "#/definitions/sources" } } };
-var func12 = Object.prototype.hasOwnProperty;
 function validate17(data, { instancePath = "", parentData, parentDataProperty, rootData = data } = {}) {
   let vErrors = null;
   let errors = 0;
@@ -463,7 +463,7 @@ function validate17(data, { instancePath = "", parentData, parentDataProperty, r
       errors++;
     }
     for (const key0 in data) {
-      if (!func12.call(schema25.properties, key0)) {
+      if (!func2.call(schema25.properties, key0)) {
         const err5 = { instancePath, schemaPath: "#/additionalProperties", keyword: "additionalProperties", params: { additionalProperty: key0 }, message: "must NOT have additional properties" };
         if (vErrors === null) {
           vErrors = [err5];
@@ -476,7 +476,7 @@ function validate17(data, { instancePath = "", parentData, parentDataProperty, r
     if (data.id !== void 0) {
       let data0 = data.id;
       if (typeof data0 === "string") {
-        if (func2(data0) < 1) {
+        if (func3(data0) < 1) {
           const err6 = { instancePath: instancePath + "/id", schemaPath: "#/definitions/nonEmptyText/minLength", keyword: "minLength", params: { limit: 1 }, message: "must NOT have fewer than 1 characters" };
           if (vErrors === null) {
             vErrors = [err6];
@@ -507,7 +507,7 @@ function validate17(data, { instancePath = "", parentData, parentDataProperty, r
     if (data.source !== void 0) {
       let data1 = data.source;
       if (typeof data1 === "string") {
-        if (func2(data1) < 1) {
+        if (func3(data1) < 1) {
           const err9 = { instancePath: instancePath + "/source", schemaPath: "#/definitions/nonEmptyText/minLength", keyword: "minLength", params: { limit: 1 }, message: "must NOT have fewer than 1 characters" };
           if (vErrors === null) {
             vErrors = [err9];
@@ -538,7 +538,7 @@ function validate17(data, { instancePath = "", parentData, parentDataProperty, r
     if (data.target !== void 0) {
       let data2 = data.target;
       if (typeof data2 === "string") {
-        if (func2(data2) < 1) {
+        if (func3(data2) < 1) {
           const err12 = { instancePath: instancePath + "/target", schemaPath: "#/definitions/nonEmptyText/minLength", keyword: "minLength", params: { limit: 1 }, message: "must NOT have fewer than 1 characters" };
           if (vErrors === null) {
             vErrors = [err12];
@@ -603,7 +603,7 @@ function validate17(data, { instancePath = "", parentData, parentDataProperty, r
     if (data.details !== void 0) {
       let data6 = data.details;
       if (typeof data6 === "string") {
-        if (func2(data6) > 8e3) {
+        if (func3(data6) > 8e3) {
           const err18 = { instancePath: instancePath + "/details", schemaPath: "#/definitions/details/maxLength", keyword: "maxLength", params: { limit: 8e3 }, message: "must NOT have more than 8000 characters" };
           if (vErrors === null) {
             vErrors = [err18];
@@ -688,7 +688,7 @@ function validate20(data, { instancePath = "", parentData, parentDataProperty, r
     if (data.id !== void 0) {
       let data0 = data.id;
       if (typeof data0 === "string") {
-        if (func2(data0) < 1) {
+        if (func3(data0) < 1) {
           const err3 = { instancePath: instancePath + "/id", schemaPath: "#/definitions/nonEmptyText/minLength", keyword: "minLength", params: { limit: 1 }, message: "must NOT have fewer than 1 characters" };
           if (vErrors === null) {
             vErrors = [err3];
@@ -719,7 +719,7 @@ function validate20(data, { instancePath = "", parentData, parentDataProperty, r
     if (data.label !== void 0) {
       let data1 = data.label;
       if (typeof data1 === "string") {
-        if (func2(data1) < 1) {
+        if (func3(data1) < 1) {
           const err6 = { instancePath: instancePath + "/label", schemaPath: "#/definitions/nonEmptyText/minLength", keyword: "minLength", params: { limit: 1 }, message: "must NOT have fewer than 1 characters" };
           if (vErrors === null) {
             vErrors = [err6];
@@ -750,7 +750,7 @@ function validate20(data, { instancePath = "", parentData, parentDataProperty, r
     if (data.parentId !== void 0) {
       let data2 = data.parentId;
       if (typeof data2 === "string") {
-        if (func2(data2) < 1) {
+        if (func3(data2) < 1) {
           const err9 = { instancePath: instancePath + "/parentId", schemaPath: "#/definitions/nonEmptyText/minLength", keyword: "minLength", params: { limit: 1 }, message: "must NOT have fewer than 1 characters" };
           if (vErrors === null) {
             vErrors = [err9];
@@ -781,7 +781,7 @@ function validate20(data, { instancePath = "", parentData, parentDataProperty, r
     if (data.details !== void 0) {
       let data3 = data.details;
       if (typeof data3 === "string") {
-        if (func2(data3) > 8e3) {
+        if (func3(data3) > 8e3) {
           const err12 = { instancePath: instancePath + "/details", schemaPath: "#/definitions/details/maxLength", keyword: "maxLength", params: { limit: 8e3 }, message: "must NOT have more than 8000 characters" };
           if (vErrors === null) {
             vErrors = [err12];
@@ -810,6 +810,748 @@ function validate20(data, { instancePath = "", parentData, parentDataProperty, r
     errors++;
   }
   validate20.errors = vErrors;
+  return errors === 0;
+}
+function validate22(data, { instancePath = "", parentData, parentDataProperty, rootData = data } = {}) {
+  let vErrors = null;
+  let errors = 0;
+  if (data && typeof data == "object" && !Array.isArray(data)) {
+    if (data.owner === void 0) {
+      const err0 = { instancePath, schemaPath: "#/required", keyword: "required", params: { missingProperty: "owner" }, message: "must have required property 'owner'" };
+      if (vErrors === null) {
+        vErrors = [err0];
+      } else {
+        vErrors.push(err0);
+      }
+      errors++;
+    }
+    if (data.nodes === void 0) {
+      const err1 = { instancePath, schemaPath: "#/required", keyword: "required", params: { missingProperty: "nodes" }, message: "must have required property 'nodes'" };
+      if (vErrors === null) {
+        vErrors = [err1];
+      } else {
+        vErrors.push(err1);
+      }
+      errors++;
+    }
+    if (data.edges === void 0) {
+      const err2 = { instancePath, schemaPath: "#/required", keyword: "required", params: { missingProperty: "edges" }, message: "must have required property 'edges'" };
+      if (vErrors === null) {
+        vErrors = [err2];
+      } else {
+        vErrors.push(err2);
+      }
+      errors++;
+    }
+    for (const key0 in data) {
+      if (!(key0 === "owner" || key0 === "nodes" || key0 === "edges")) {
+        const err3 = { instancePath, schemaPath: "#/additionalProperties", keyword: "additionalProperties", params: { additionalProperty: key0 }, message: "must NOT have additional properties" };
+        if (vErrors === null) {
+          vErrors = [err3];
+        } else {
+          vErrors.push(err3);
+        }
+        errors++;
+      }
+    }
+    if (data.owner !== void 0) {
+      let data0 = data.owner;
+      if (typeof data0 === "string") {
+        if (func3(data0) < 1) {
+          const err4 = { instancePath: instancePath + "/owner", schemaPath: "#/definitions/nonEmptyText/minLength", keyword: "minLength", params: { limit: 1 }, message: "must NOT have fewer than 1 characters" };
+          if (vErrors === null) {
+            vErrors = [err4];
+          } else {
+            vErrors.push(err4);
+          }
+          errors++;
+        }
+        if (!pattern0.test(data0)) {
+          const err5 = { instancePath: instancePath + "/owner", schemaPath: "#/definitions/nonEmptyText/pattern", keyword: "pattern", params: { pattern: "\\S" }, message: 'must match pattern "\\S"' };
+          if (vErrors === null) {
+            vErrors = [err5];
+          } else {
+            vErrors.push(err5);
+          }
+          errors++;
+        }
+      } else {
+        const err6 = { instancePath: instancePath + "/owner", schemaPath: "#/definitions/nonEmptyText/type", keyword: "type", params: { type: "string" }, message: "must be string" };
+        if (vErrors === null) {
+          vErrors = [err6];
+        } else {
+          vErrors.push(err6);
+        }
+        errors++;
+      }
+    }
+    if (data.nodes !== void 0) {
+      let data1 = data.nodes;
+      if (Array.isArray(data1)) {
+        if (data1.length > 100) {
+          const err7 = { instancePath: instancePath + "/nodes", schemaPath: "#/properties/nodes/maxItems", keyword: "maxItems", params: { limit: 100 }, message: "must NOT have more than 100 items" };
+          if (vErrors === null) {
+            vErrors = [err7];
+          } else {
+            vErrors.push(err7);
+          }
+          errors++;
+        }
+        if (data1.length < 1) {
+          const err8 = { instancePath: instancePath + "/nodes", schemaPath: "#/properties/nodes/minItems", keyword: "minItems", params: { limit: 1 }, message: "must NOT have fewer than 1 items" };
+          if (vErrors === null) {
+            vErrors = [err8];
+          } else {
+            vErrors.push(err8);
+          }
+          errors++;
+        }
+        const len0 = data1.length;
+        for (let i0 = 0; i0 < len0; i0++) {
+          if (!validate11(data1[i0], { instancePath: instancePath + "/nodes/" + i0, parentData: data1, parentDataProperty: i0, rootData })) {
+            vErrors = vErrors === null ? validate11.errors : vErrors.concat(validate11.errors);
+            errors = vErrors.length;
+          }
+        }
+      } else {
+        const err9 = { instancePath: instancePath + "/nodes", schemaPath: "#/properties/nodes/type", keyword: "type", params: { type: "array" }, message: "must be array" };
+        if (vErrors === null) {
+          vErrors = [err9];
+        } else {
+          vErrors.push(err9);
+        }
+        errors++;
+      }
+    }
+    if (data.edges !== void 0) {
+      let data3 = data.edges;
+      if (Array.isArray(data3)) {
+        if (data3.length > 300) {
+          const err10 = { instancePath: instancePath + "/edges", schemaPath: "#/properties/edges/maxItems", keyword: "maxItems", params: { limit: 300 }, message: "must NOT have more than 300 items" };
+          if (vErrors === null) {
+            vErrors = [err10];
+          } else {
+            vErrors.push(err10);
+          }
+          errors++;
+        }
+        const len1 = data3.length;
+        for (let i1 = 0; i1 < len1; i1++) {
+          if (!validate17(data3[i1], { instancePath: instancePath + "/edges/" + i1, parentData: data3, parentDataProperty: i1, rootData })) {
+            vErrors = vErrors === null ? validate17.errors : vErrors.concat(validate17.errors);
+            errors = vErrors.length;
+          }
+        }
+      } else {
+        const err11 = { instancePath: instancePath + "/edges", schemaPath: "#/properties/edges/type", keyword: "type", params: { type: "array" }, message: "must be array" };
+        if (vErrors === null) {
+          vErrors = [err11];
+        } else {
+          vErrors.push(err11);
+        }
+        errors++;
+      }
+    }
+  } else {
+    const err12 = { instancePath, schemaPath: "#/type", keyword: "type", params: { type: "object" }, message: "must be object" };
+    if (vErrors === null) {
+      vErrors = [err12];
+    } else {
+      vErrors.push(err12);
+    }
+    errors++;
+  }
+  validate22.errors = vErrors;
+  return errors === 0;
+}
+var schema38 = { "type": "object", "additionalProperties": false, "required": ["nodeId", "shape"], "properties": { "nodeId": { "$ref": "#/definitions/nonEmptyText" }, "shape": { "enum": ["service", "shell", "gateway", "client", "database", "event", "external", "auth", "decision", "rack", "adjust", "link", "channel", "ledger", "result"] }, "color": { "type": "string", "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$" }, "shortLabel": { "$ref": "#/definitions/nonEmptyText" } } };
+var pattern16 = new RegExp("^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$", "u");
+function validate26(data, { instancePath = "", parentData, parentDataProperty, rootData = data } = {}) {
+  let vErrors = null;
+  let errors = 0;
+  if (data && typeof data == "object" && !Array.isArray(data)) {
+    if (data.nodeId === void 0) {
+      const err0 = { instancePath, schemaPath: "#/required", keyword: "required", params: { missingProperty: "nodeId" }, message: "must have required property 'nodeId'" };
+      if (vErrors === null) {
+        vErrors = [err0];
+      } else {
+        vErrors.push(err0);
+      }
+      errors++;
+    }
+    if (data.shape === void 0) {
+      const err1 = { instancePath, schemaPath: "#/required", keyword: "required", params: { missingProperty: "shape" }, message: "must have required property 'shape'" };
+      if (vErrors === null) {
+        vErrors = [err1];
+      } else {
+        vErrors.push(err1);
+      }
+      errors++;
+    }
+    for (const key0 in data) {
+      if (!(key0 === "nodeId" || key0 === "shape" || key0 === "color" || key0 === "shortLabel")) {
+        const err2 = { instancePath, schemaPath: "#/additionalProperties", keyword: "additionalProperties", params: { additionalProperty: key0 }, message: "must NOT have additional properties" };
+        if (vErrors === null) {
+          vErrors = [err2];
+        } else {
+          vErrors.push(err2);
+        }
+        errors++;
+      }
+    }
+    if (data.nodeId !== void 0) {
+      let data0 = data.nodeId;
+      if (typeof data0 === "string") {
+        if (func3(data0) < 1) {
+          const err3 = { instancePath: instancePath + "/nodeId", schemaPath: "#/definitions/nonEmptyText/minLength", keyword: "minLength", params: { limit: 1 }, message: "must NOT have fewer than 1 characters" };
+          if (vErrors === null) {
+            vErrors = [err3];
+          } else {
+            vErrors.push(err3);
+          }
+          errors++;
+        }
+        if (!pattern0.test(data0)) {
+          const err4 = { instancePath: instancePath + "/nodeId", schemaPath: "#/definitions/nonEmptyText/pattern", keyword: "pattern", params: { pattern: "\\S" }, message: 'must match pattern "\\S"' };
+          if (vErrors === null) {
+            vErrors = [err4];
+          } else {
+            vErrors.push(err4);
+          }
+          errors++;
+        }
+      } else {
+        const err5 = { instancePath: instancePath + "/nodeId", schemaPath: "#/definitions/nonEmptyText/type", keyword: "type", params: { type: "string" }, message: "must be string" };
+        if (vErrors === null) {
+          vErrors = [err5];
+        } else {
+          vErrors.push(err5);
+        }
+        errors++;
+      }
+    }
+    if (data.shape !== void 0) {
+      let data1 = data.shape;
+      if (!(data1 === "service" || data1 === "shell" || data1 === "gateway" || data1 === "client" || data1 === "database" || data1 === "event" || data1 === "external" || data1 === "auth" || data1 === "decision" || data1 === "rack" || data1 === "adjust" || data1 === "link" || data1 === "channel" || data1 === "ledger" || data1 === "result")) {
+        const err6 = { instancePath: instancePath + "/shape", schemaPath: "#/properties/shape/enum", keyword: "enum", params: { allowedValues: schema38.properties.shape.enum }, message: "must be equal to one of the allowed values" };
+        if (vErrors === null) {
+          vErrors = [err6];
+        } else {
+          vErrors.push(err6);
+        }
+        errors++;
+      }
+    }
+    if (data.color !== void 0) {
+      let data2 = data.color;
+      if (typeof data2 === "string") {
+        if (!pattern16.test(data2)) {
+          const err7 = { instancePath: instancePath + "/color", schemaPath: "#/properties/color/pattern", keyword: "pattern", params: { pattern: "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$" }, message: 'must match pattern "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$"' };
+          if (vErrors === null) {
+            vErrors = [err7];
+          } else {
+            vErrors.push(err7);
+          }
+          errors++;
+        }
+      } else {
+        const err8 = { instancePath: instancePath + "/color", schemaPath: "#/properties/color/type", keyword: "type", params: { type: "string" }, message: "must be string" };
+        if (vErrors === null) {
+          vErrors = [err8];
+        } else {
+          vErrors.push(err8);
+        }
+        errors++;
+      }
+    }
+    if (data.shortLabel !== void 0) {
+      let data3 = data.shortLabel;
+      if (typeof data3 === "string") {
+        if (func3(data3) < 1) {
+          const err9 = { instancePath: instancePath + "/shortLabel", schemaPath: "#/definitions/nonEmptyText/minLength", keyword: "minLength", params: { limit: 1 }, message: "must NOT have fewer than 1 characters" };
+          if (vErrors === null) {
+            vErrors = [err9];
+          } else {
+            vErrors.push(err9);
+          }
+          errors++;
+        }
+        if (!pattern0.test(data3)) {
+          const err10 = { instancePath: instancePath + "/shortLabel", schemaPath: "#/definitions/nonEmptyText/pattern", keyword: "pattern", params: { pattern: "\\S" }, message: 'must match pattern "\\S"' };
+          if (vErrors === null) {
+            vErrors = [err10];
+          } else {
+            vErrors.push(err10);
+          }
+          errors++;
+        }
+      } else {
+        const err11 = { instancePath: instancePath + "/shortLabel", schemaPath: "#/definitions/nonEmptyText/type", keyword: "type", params: { type: "string" }, message: "must be string" };
+        if (vErrors === null) {
+          vErrors = [err11];
+        } else {
+          vErrors.push(err11);
+        }
+        errors++;
+      }
+    }
+  } else {
+    const err12 = { instancePath, schemaPath: "#/type", keyword: "type", params: { type: "object" }, message: "must be object" };
+    if (vErrors === null) {
+      vErrors = [err12];
+    } else {
+      vErrors.push(err12);
+    }
+    errors++;
+  }
+  validate26.errors = vErrors;
+  return errors === 0;
+}
+var schema44 = { "type": "object", "additionalProperties": false, "required": ["id", "title", "description", "route", "focusId", "tone"], "properties": { "id": { "$ref": "#/definitions/nonEmptyText" }, "title": { "$ref": "#/definitions/nonEmptyText" }, "description": { "type": "string" }, "route": { "type": "array", "minItems": 1, "maxItems": 300, "items": { "$ref": "#/definitions/nonEmptyText" } }, "focusId": { "$ref": "#/definitions/nonEmptyText" }, "tone": { "enum": ["request", "data", "success", "failure"] }, "durationMs": { "type": "integer", "minimum": 1, "maximum": 9007199254740991 } } };
+function validate29(data, { instancePath = "", parentData, parentDataProperty, rootData = data } = {}) {
+  let vErrors = null;
+  let errors = 0;
+  if (data && typeof data == "object" && !Array.isArray(data)) {
+    if (data.id === void 0) {
+      const err0 = { instancePath, schemaPath: "#/required", keyword: "required", params: { missingProperty: "id" }, message: "must have required property 'id'" };
+      if (vErrors === null) {
+        vErrors = [err0];
+      } else {
+        vErrors.push(err0);
+      }
+      errors++;
+    }
+    if (data.title === void 0) {
+      const err1 = { instancePath, schemaPath: "#/required", keyword: "required", params: { missingProperty: "title" }, message: "must have required property 'title'" };
+      if (vErrors === null) {
+        vErrors = [err1];
+      } else {
+        vErrors.push(err1);
+      }
+      errors++;
+    }
+    if (data.description === void 0) {
+      const err2 = { instancePath, schemaPath: "#/required", keyword: "required", params: { missingProperty: "description" }, message: "must have required property 'description'" };
+      if (vErrors === null) {
+        vErrors = [err2];
+      } else {
+        vErrors.push(err2);
+      }
+      errors++;
+    }
+    if (data.route === void 0) {
+      const err3 = { instancePath, schemaPath: "#/required", keyword: "required", params: { missingProperty: "route" }, message: "must have required property 'route'" };
+      if (vErrors === null) {
+        vErrors = [err3];
+      } else {
+        vErrors.push(err3);
+      }
+      errors++;
+    }
+    if (data.focusId === void 0) {
+      const err4 = { instancePath, schemaPath: "#/required", keyword: "required", params: { missingProperty: "focusId" }, message: "must have required property 'focusId'" };
+      if (vErrors === null) {
+        vErrors = [err4];
+      } else {
+        vErrors.push(err4);
+      }
+      errors++;
+    }
+    if (data.tone === void 0) {
+      const err5 = { instancePath, schemaPath: "#/required", keyword: "required", params: { missingProperty: "tone" }, message: "must have required property 'tone'" };
+      if (vErrors === null) {
+        vErrors = [err5];
+      } else {
+        vErrors.push(err5);
+      }
+      errors++;
+    }
+    for (const key0 in data) {
+      if (!(key0 === "id" || key0 === "title" || key0 === "description" || key0 === "route" || key0 === "focusId" || key0 === "tone" || key0 === "durationMs")) {
+        const err6 = { instancePath, schemaPath: "#/additionalProperties", keyword: "additionalProperties", params: { additionalProperty: key0 }, message: "must NOT have additional properties" };
+        if (vErrors === null) {
+          vErrors = [err6];
+        } else {
+          vErrors.push(err6);
+        }
+        errors++;
+      }
+    }
+    if (data.id !== void 0) {
+      let data0 = data.id;
+      if (typeof data0 === "string") {
+        if (func3(data0) < 1) {
+          const err7 = { instancePath: instancePath + "/id", schemaPath: "#/definitions/nonEmptyText/minLength", keyword: "minLength", params: { limit: 1 }, message: "must NOT have fewer than 1 characters" };
+          if (vErrors === null) {
+            vErrors = [err7];
+          } else {
+            vErrors.push(err7);
+          }
+          errors++;
+        }
+        if (!pattern0.test(data0)) {
+          const err8 = { instancePath: instancePath + "/id", schemaPath: "#/definitions/nonEmptyText/pattern", keyword: "pattern", params: { pattern: "\\S" }, message: 'must match pattern "\\S"' };
+          if (vErrors === null) {
+            vErrors = [err8];
+          } else {
+            vErrors.push(err8);
+          }
+          errors++;
+        }
+      } else {
+        const err9 = { instancePath: instancePath + "/id", schemaPath: "#/definitions/nonEmptyText/type", keyword: "type", params: { type: "string" }, message: "must be string" };
+        if (vErrors === null) {
+          vErrors = [err9];
+        } else {
+          vErrors.push(err9);
+        }
+        errors++;
+      }
+    }
+    if (data.title !== void 0) {
+      let data1 = data.title;
+      if (typeof data1 === "string") {
+        if (func3(data1) < 1) {
+          const err10 = { instancePath: instancePath + "/title", schemaPath: "#/definitions/nonEmptyText/minLength", keyword: "minLength", params: { limit: 1 }, message: "must NOT have fewer than 1 characters" };
+          if (vErrors === null) {
+            vErrors = [err10];
+          } else {
+            vErrors.push(err10);
+          }
+          errors++;
+        }
+        if (!pattern0.test(data1)) {
+          const err11 = { instancePath: instancePath + "/title", schemaPath: "#/definitions/nonEmptyText/pattern", keyword: "pattern", params: { pattern: "\\S" }, message: 'must match pattern "\\S"' };
+          if (vErrors === null) {
+            vErrors = [err11];
+          } else {
+            vErrors.push(err11);
+          }
+          errors++;
+        }
+      } else {
+        const err12 = { instancePath: instancePath + "/title", schemaPath: "#/definitions/nonEmptyText/type", keyword: "type", params: { type: "string" }, message: "must be string" };
+        if (vErrors === null) {
+          vErrors = [err12];
+        } else {
+          vErrors.push(err12);
+        }
+        errors++;
+      }
+    }
+    if (data.description !== void 0) {
+      if (typeof data.description !== "string") {
+        const err13 = { instancePath: instancePath + "/description", schemaPath: "#/properties/description/type", keyword: "type", params: { type: "string" }, message: "must be string" };
+        if (vErrors === null) {
+          vErrors = [err13];
+        } else {
+          vErrors.push(err13);
+        }
+        errors++;
+      }
+    }
+    if (data.route !== void 0) {
+      let data3 = data.route;
+      if (Array.isArray(data3)) {
+        if (data3.length > 300) {
+          const err14 = { instancePath: instancePath + "/route", schemaPath: "#/properties/route/maxItems", keyword: "maxItems", params: { limit: 300 }, message: "must NOT have more than 300 items" };
+          if (vErrors === null) {
+            vErrors = [err14];
+          } else {
+            vErrors.push(err14);
+          }
+          errors++;
+        }
+        if (data3.length < 1) {
+          const err15 = { instancePath: instancePath + "/route", schemaPath: "#/properties/route/minItems", keyword: "minItems", params: { limit: 1 }, message: "must NOT have fewer than 1 items" };
+          if (vErrors === null) {
+            vErrors = [err15];
+          } else {
+            vErrors.push(err15);
+          }
+          errors++;
+        }
+        const len0 = data3.length;
+        for (let i0 = 0; i0 < len0; i0++) {
+          let data4 = data3[i0];
+          if (typeof data4 === "string") {
+            if (func3(data4) < 1) {
+              const err16 = { instancePath: instancePath + "/route/" + i0, schemaPath: "#/definitions/nonEmptyText/minLength", keyword: "minLength", params: { limit: 1 }, message: "must NOT have fewer than 1 characters" };
+              if (vErrors === null) {
+                vErrors = [err16];
+              } else {
+                vErrors.push(err16);
+              }
+              errors++;
+            }
+            if (!pattern0.test(data4)) {
+              const err17 = { instancePath: instancePath + "/route/" + i0, schemaPath: "#/definitions/nonEmptyText/pattern", keyword: "pattern", params: { pattern: "\\S" }, message: 'must match pattern "\\S"' };
+              if (vErrors === null) {
+                vErrors = [err17];
+              } else {
+                vErrors.push(err17);
+              }
+              errors++;
+            }
+          } else {
+            const err18 = { instancePath: instancePath + "/route/" + i0, schemaPath: "#/definitions/nonEmptyText/type", keyword: "type", params: { type: "string" }, message: "must be string" };
+            if (vErrors === null) {
+              vErrors = [err18];
+            } else {
+              vErrors.push(err18);
+            }
+            errors++;
+          }
+        }
+      } else {
+        const err19 = { instancePath: instancePath + "/route", schemaPath: "#/properties/route/type", keyword: "type", params: { type: "array" }, message: "must be array" };
+        if (vErrors === null) {
+          vErrors = [err19];
+        } else {
+          vErrors.push(err19);
+        }
+        errors++;
+      }
+    }
+    if (data.focusId !== void 0) {
+      let data5 = data.focusId;
+      if (typeof data5 === "string") {
+        if (func3(data5) < 1) {
+          const err20 = { instancePath: instancePath + "/focusId", schemaPath: "#/definitions/nonEmptyText/minLength", keyword: "minLength", params: { limit: 1 }, message: "must NOT have fewer than 1 characters" };
+          if (vErrors === null) {
+            vErrors = [err20];
+          } else {
+            vErrors.push(err20);
+          }
+          errors++;
+        }
+        if (!pattern0.test(data5)) {
+          const err21 = { instancePath: instancePath + "/focusId", schemaPath: "#/definitions/nonEmptyText/pattern", keyword: "pattern", params: { pattern: "\\S" }, message: 'must match pattern "\\S"' };
+          if (vErrors === null) {
+            vErrors = [err21];
+          } else {
+            vErrors.push(err21);
+          }
+          errors++;
+        }
+      } else {
+        const err22 = { instancePath: instancePath + "/focusId", schemaPath: "#/definitions/nonEmptyText/type", keyword: "type", params: { type: "string" }, message: "must be string" };
+        if (vErrors === null) {
+          vErrors = [err22];
+        } else {
+          vErrors.push(err22);
+        }
+        errors++;
+      }
+    }
+    if (data.tone !== void 0) {
+      let data6 = data.tone;
+      if (!(data6 === "request" || data6 === "data" || data6 === "success" || data6 === "failure")) {
+        const err23 = { instancePath: instancePath + "/tone", schemaPath: "#/properties/tone/enum", keyword: "enum", params: { allowedValues: schema44.properties.tone.enum }, message: "must be equal to one of the allowed values" };
+        if (vErrors === null) {
+          vErrors = [err23];
+        } else {
+          vErrors.push(err23);
+        }
+        errors++;
+      }
+    }
+    if (data.durationMs !== void 0) {
+      let data7 = data.durationMs;
+      if (!(typeof data7 == "number" && (!(data7 % 1) && !isNaN(data7)) && isFinite(data7))) {
+        const err24 = { instancePath: instancePath + "/durationMs", schemaPath: "#/properties/durationMs/type", keyword: "type", params: { type: "integer" }, message: "must be integer" };
+        if (vErrors === null) {
+          vErrors = [err24];
+        } else {
+          vErrors.push(err24);
+        }
+        errors++;
+      }
+      if (typeof data7 == "number" && isFinite(data7)) {
+        if (data7 > 9007199254740991 || isNaN(data7)) {
+          const err25 = { instancePath: instancePath + "/durationMs", schemaPath: "#/properties/durationMs/maximum", keyword: "maximum", params: { comparison: "<=", limit: 9007199254740991 }, message: "must be <= 9007199254740991" };
+          if (vErrors === null) {
+            vErrors = [err25];
+          } else {
+            vErrors.push(err25);
+          }
+          errors++;
+        }
+        if (data7 < 1 || isNaN(data7)) {
+          const err26 = { instancePath: instancePath + "/durationMs", schemaPath: "#/properties/durationMs/minimum", keyword: "minimum", params: { comparison: ">=", limit: 1 }, message: "must be >= 1" };
+          if (vErrors === null) {
+            vErrors = [err26];
+          } else {
+            vErrors.push(err26);
+          }
+          errors++;
+        }
+      }
+    }
+  } else {
+    const err27 = { instancePath, schemaPath: "#/type", keyword: "type", params: { type: "object" }, message: "must be object" };
+    if (vErrors === null) {
+      vErrors = [err27];
+    } else {
+      vErrors.push(err27);
+    }
+    errors++;
+  }
+  validate29.errors = vErrors;
+  return errors === 0;
+}
+function validate28(data, { instancePath = "", parentData, parentDataProperty, rootData = data } = {}) {
+  let vErrors = null;
+  let errors = 0;
+  if (data && typeof data == "object" && !Array.isArray(data)) {
+    if (data.id === void 0) {
+      const err0 = { instancePath, schemaPath: "#/required", keyword: "required", params: { missingProperty: "id" }, message: "must have required property 'id'" };
+      if (vErrors === null) {
+        vErrors = [err0];
+      } else {
+        vErrors.push(err0);
+      }
+      errors++;
+    }
+    if (data.label === void 0) {
+      const err1 = { instancePath, schemaPath: "#/required", keyword: "required", params: { missingProperty: "label" }, message: "must have required property 'label'" };
+      if (vErrors === null) {
+        vErrors = [err1];
+      } else {
+        vErrors.push(err1);
+      }
+      errors++;
+    }
+    if (data.steps === void 0) {
+      const err2 = { instancePath, schemaPath: "#/required", keyword: "required", params: { missingProperty: "steps" }, message: "must have required property 'steps'" };
+      if (vErrors === null) {
+        vErrors = [err2];
+      } else {
+        vErrors.push(err2);
+      }
+      errors++;
+    }
+    for (const key0 in data) {
+      if (!(key0 === "id" || key0 === "label" || key0 === "steps")) {
+        const err3 = { instancePath, schemaPath: "#/additionalProperties", keyword: "additionalProperties", params: { additionalProperty: key0 }, message: "must NOT have additional properties" };
+        if (vErrors === null) {
+          vErrors = [err3];
+        } else {
+          vErrors.push(err3);
+        }
+        errors++;
+      }
+    }
+    if (data.id !== void 0) {
+      let data0 = data.id;
+      if (typeof data0 === "string") {
+        if (func3(data0) < 1) {
+          const err4 = { instancePath: instancePath + "/id", schemaPath: "#/definitions/nonEmptyText/minLength", keyword: "minLength", params: { limit: 1 }, message: "must NOT have fewer than 1 characters" };
+          if (vErrors === null) {
+            vErrors = [err4];
+          } else {
+            vErrors.push(err4);
+          }
+          errors++;
+        }
+        if (!pattern0.test(data0)) {
+          const err5 = { instancePath: instancePath + "/id", schemaPath: "#/definitions/nonEmptyText/pattern", keyword: "pattern", params: { pattern: "\\S" }, message: 'must match pattern "\\S"' };
+          if (vErrors === null) {
+            vErrors = [err5];
+          } else {
+            vErrors.push(err5);
+          }
+          errors++;
+        }
+      } else {
+        const err6 = { instancePath: instancePath + "/id", schemaPath: "#/definitions/nonEmptyText/type", keyword: "type", params: { type: "string" }, message: "must be string" };
+        if (vErrors === null) {
+          vErrors = [err6];
+        } else {
+          vErrors.push(err6);
+        }
+        errors++;
+      }
+    }
+    if (data.label !== void 0) {
+      let data1 = data.label;
+      if (typeof data1 === "string") {
+        if (func3(data1) < 1) {
+          const err7 = { instancePath: instancePath + "/label", schemaPath: "#/definitions/nonEmptyText/minLength", keyword: "minLength", params: { limit: 1 }, message: "must NOT have fewer than 1 characters" };
+          if (vErrors === null) {
+            vErrors = [err7];
+          } else {
+            vErrors.push(err7);
+          }
+          errors++;
+        }
+        if (!pattern0.test(data1)) {
+          const err8 = { instancePath: instancePath + "/label", schemaPath: "#/definitions/nonEmptyText/pattern", keyword: "pattern", params: { pattern: "\\S" }, message: 'must match pattern "\\S"' };
+          if (vErrors === null) {
+            vErrors = [err8];
+          } else {
+            vErrors.push(err8);
+          }
+          errors++;
+        }
+      } else {
+        const err9 = { instancePath: instancePath + "/label", schemaPath: "#/definitions/nonEmptyText/type", keyword: "type", params: { type: "string" }, message: "must be string" };
+        if (vErrors === null) {
+          vErrors = [err9];
+        } else {
+          vErrors.push(err9);
+        }
+        errors++;
+      }
+    }
+    if (data.steps !== void 0) {
+      let data2 = data.steps;
+      if (Array.isArray(data2)) {
+        if (data2.length > 200) {
+          const err10 = { instancePath: instancePath + "/steps", schemaPath: "#/properties/steps/maxItems", keyword: "maxItems", params: { limit: 200 }, message: "must NOT have more than 200 items" };
+          if (vErrors === null) {
+            vErrors = [err10];
+          } else {
+            vErrors.push(err10);
+          }
+          errors++;
+        }
+        if (data2.length < 1) {
+          const err11 = { instancePath: instancePath + "/steps", schemaPath: "#/properties/steps/minItems", keyword: "minItems", params: { limit: 1 }, message: "must NOT have fewer than 1 items" };
+          if (vErrors === null) {
+            vErrors = [err11];
+          } else {
+            vErrors.push(err11);
+          }
+          errors++;
+        }
+        const len0 = data2.length;
+        for (let i0 = 0; i0 < len0; i0++) {
+          if (!validate29(data2[i0], { instancePath: instancePath + "/steps/" + i0, parentData: data2, parentDataProperty: i0, rootData })) {
+            vErrors = vErrors === null ? validate29.errors : vErrors.concat(validate29.errors);
+            errors = vErrors.length;
+          }
+        }
+      } else {
+        const err12 = { instancePath: instancePath + "/steps", schemaPath: "#/properties/steps/type", keyword: "type", params: { type: "array" }, message: "must be array" };
+        if (vErrors === null) {
+          vErrors = [err12];
+        } else {
+          vErrors.push(err12);
+        }
+        errors++;
+      }
+    }
+  } else {
+    const err13 = { instancePath, schemaPath: "#/type", keyword: "type", params: { type: "object" }, message: "must be object" };
+    if (vErrors === null) {
+      vErrors = [err13];
+    } else {
+      vErrors.push(err13);
+    }
+    errors++;
+  }
+  validate28.errors = vErrors;
   return errors === 0;
 }
 function validate10(data, { instancePath = "", parentData, parentDataProperty, rootData = data } = {}) {
@@ -881,7 +1623,7 @@ function validate10(data, { instancePath = "", parentData, parentDataProperty, r
       errors++;
     }
     for (const key0 in data) {
-      if (!(key0 === "schemaVersion" || key0 === "id" || key0 === "title" || key0 === "description" || key0 === "view" || key0 === "nodes" || key0 === "edges" || key0 === "groups")) {
+      if (!func2.call(schema11.properties, key0)) {
         const err7 = { instancePath, schemaPath: "#/additionalProperties", keyword: "additionalProperties", params: { additionalProperty: key0 }, message: "must NOT have additional properties" };
         if (vErrors === null) {
           vErrors = [err7];
@@ -915,7 +1657,7 @@ function validate10(data, { instancePath = "", parentData, parentDataProperty, r
     if (data.id !== void 0) {
       let data1 = data.id;
       if (typeof data1 === "string") {
-        if (func2(data1) < 1) {
+        if (func3(data1) < 1) {
           const err10 = { instancePath: instancePath + "/id", schemaPath: "#/definitions/nonEmptyText/minLength", keyword: "minLength", params: { limit: 1 }, message: "must NOT have fewer than 1 characters" };
           if (vErrors === null) {
             vErrors = [err10];
@@ -946,7 +1688,7 @@ function validate10(data, { instancePath = "", parentData, parentDataProperty, r
     if (data.title !== void 0) {
       let data2 = data.title;
       if (typeof data2 === "string") {
-        if (func2(data2) < 1) {
+        if (func3(data2) < 1) {
           const err13 = { instancePath: instancePath + "/title", schemaPath: "#/definitions/nonEmptyText/minLength", keyword: "minLength", params: { limit: 1 }, message: "must NOT have fewer than 1 characters" };
           if (vErrors === null) {
             vErrors = [err13];
@@ -1069,7 +1811,7 @@ function validate10(data, { instancePath = "", parentData, parentDataProperty, r
             for (let i0 = 0; i0 < len0; i0++) {
               let data9 = data8[i0];
               if (typeof data9 === "string") {
-                if (func2(data9) < 1) {
+                if (func3(data9) < 1) {
                   const err24 = { instancePath: instancePath + "/view/collapsedGroups/" + i0, schemaPath: "#/definitions/nonEmptyText/minLength", keyword: "minLength", params: { limit: 1 }, message: "must NOT have fewer than 1 characters" };
                   if (vErrors === null) {
                     vErrors = [err24];
@@ -1132,7 +1874,7 @@ function validate10(data, { instancePath = "", parentData, parentDataProperty, r
             for (let i2 = 0; i2 < len1; i2++) {
               let data11 = data10[i2];
               if (typeof data11 === "string") {
-                if (func2(data11) < 1) {
+                if (func3(data11) < 1) {
                   const err29 = { instancePath: instancePath + "/view/primaryPath/" + i2, schemaPath: "#/definitions/nonEmptyText/minLength", keyword: "minLength", params: { limit: 1 }, message: "must NOT have fewer than 1 characters" };
                   if (vErrors === null) {
                     vErrors = [err29];
@@ -1276,12 +2018,123 @@ function validate10(data, { instancePath = "", parentData, parentDataProperty, r
         errors++;
       }
     }
+    if (data.spatial !== void 0) {
+      let data18 = data.spatial;
+      if (data18 && typeof data18 == "object" && !Array.isArray(data18)) {
+        for (const key2 in data18) {
+          if (!(key2 === "interiors" || key2 === "models" || key2 === "scenarios")) {
+            const err41 = { instancePath: instancePath + "/spatial", schemaPath: "#/properties/spatial/additionalProperties", keyword: "additionalProperties", params: { additionalProperty: key2 }, message: "must NOT have additional properties" };
+            if (vErrors === null) {
+              vErrors = [err41];
+            } else {
+              vErrors.push(err41);
+            }
+            errors++;
+          }
+        }
+        if (data18.interiors !== void 0) {
+          let data19 = data18.interiors;
+          if (Array.isArray(data19)) {
+            if (data19.length > 100) {
+              const err42 = { instancePath: instancePath + "/spatial/interiors", schemaPath: "#/properties/spatial/properties/interiors/maxItems", keyword: "maxItems", params: { limit: 100 }, message: "must NOT have more than 100 items" };
+              if (vErrors === null) {
+                vErrors = [err42];
+              } else {
+                vErrors.push(err42);
+              }
+              errors++;
+            }
+            const len5 = data19.length;
+            for (let i6 = 0; i6 < len5; i6++) {
+              if (!validate22(data19[i6], { instancePath: instancePath + "/spatial/interiors/" + i6, parentData: data19, parentDataProperty: i6, rootData })) {
+                vErrors = vErrors === null ? validate22.errors : vErrors.concat(validate22.errors);
+                errors = vErrors.length;
+              }
+            }
+          } else {
+            const err43 = { instancePath: instancePath + "/spatial/interiors", schemaPath: "#/properties/spatial/properties/interiors/type", keyword: "type", params: { type: "array" }, message: "must be array" };
+            if (vErrors === null) {
+              vErrors = [err43];
+            } else {
+              vErrors.push(err43);
+            }
+            errors++;
+          }
+        }
+        if (data18.models !== void 0) {
+          let data21 = data18.models;
+          if (Array.isArray(data21)) {
+            if (data21.length > 100) {
+              const err44 = { instancePath: instancePath + "/spatial/models", schemaPath: "#/properties/spatial/properties/models/maxItems", keyword: "maxItems", params: { limit: 100 }, message: "must NOT have more than 100 items" };
+              if (vErrors === null) {
+                vErrors = [err44];
+              } else {
+                vErrors.push(err44);
+              }
+              errors++;
+            }
+            const len6 = data21.length;
+            for (let i7 = 0; i7 < len6; i7++) {
+              if (!validate26(data21[i7], { instancePath: instancePath + "/spatial/models/" + i7, parentData: data21, parentDataProperty: i7, rootData })) {
+                vErrors = vErrors === null ? validate26.errors : vErrors.concat(validate26.errors);
+                errors = vErrors.length;
+              }
+            }
+          } else {
+            const err45 = { instancePath: instancePath + "/spatial/models", schemaPath: "#/properties/spatial/properties/models/type", keyword: "type", params: { type: "array" }, message: "must be array" };
+            if (vErrors === null) {
+              vErrors = [err45];
+            } else {
+              vErrors.push(err45);
+            }
+            errors++;
+          }
+        }
+        if (data18.scenarios !== void 0) {
+          let data23 = data18.scenarios;
+          if (Array.isArray(data23)) {
+            if (data23.length > 20) {
+              const err46 = { instancePath: instancePath + "/spatial/scenarios", schemaPath: "#/properties/spatial/properties/scenarios/maxItems", keyword: "maxItems", params: { limit: 20 }, message: "must NOT have more than 20 items" };
+              if (vErrors === null) {
+                vErrors = [err46];
+              } else {
+                vErrors.push(err46);
+              }
+              errors++;
+            }
+            const len7 = data23.length;
+            for (let i8 = 0; i8 < len7; i8++) {
+              if (!validate28(data23[i8], { instancePath: instancePath + "/spatial/scenarios/" + i8, parentData: data23, parentDataProperty: i8, rootData })) {
+                vErrors = vErrors === null ? validate28.errors : vErrors.concat(validate28.errors);
+                errors = vErrors.length;
+              }
+            }
+          } else {
+            const err47 = { instancePath: instancePath + "/spatial/scenarios", schemaPath: "#/properties/spatial/properties/scenarios/type", keyword: "type", params: { type: "array" }, message: "must be array" };
+            if (vErrors === null) {
+              vErrors = [err47];
+            } else {
+              vErrors.push(err47);
+            }
+            errors++;
+          }
+        }
+      } else {
+        const err48 = { instancePath: instancePath + "/spatial", schemaPath: "#/properties/spatial/type", keyword: "type", params: { type: "object" }, message: "must be object" };
+        if (vErrors === null) {
+          vErrors = [err48];
+        } else {
+          vErrors.push(err48);
+        }
+        errors++;
+      }
+    }
   } else {
-    const err41 = { instancePath, schemaPath: "#/type", keyword: "type", params: { type: "object" }, message: "must be object" };
+    const err49 = { instancePath, schemaPath: "#/type", keyword: "type", params: { type: "object" }, message: "must be object" };
     if (vErrors === null) {
-      vErrors = [err41];
+      vErrors = [err49];
     } else {
-      vErrors.push(err41);
+      vErrors.push(err49);
     }
     errors++;
   }
@@ -1362,6 +2215,30 @@ function schemaDiagnostic(error) {
     message: `${path || "/"}: ${error.message ?? "\u7ED3\u6784\u4E0D\u7B26\u5408 schema"}`
   };
 }
+function validateBranches(document, add, prefix = "") {
+  const index = buildGraphIndex(document);
+  document.nodes.forEach((node, i) => {
+    const outgoing = index.outgoing.get(node.id) ?? [];
+    if (node.kind === "decision") {
+      const branches = outgoing.filter(isFlowEdge);
+      if (branches.length < 2) add("DECISION_BRANCH_COUNT", `${prefix}/nodes/${i}/kind`, [node.id], "decision \u5728\u6D41\u7A0B\u5B50\u56FE\u4E2D\u81F3\u5C11\u9700\u8981\u4E24\u4E2A\u51FA\u53E3\uFF0Cdata/dependency \u4E0D\u8BA1\u5165\u3002");
+      const conditions = /* @__PURE__ */ new Set();
+      for (const edge of branches) {
+        const label = edge.label?.trim();
+        const path = `${prefix}/edges/${document.edges.indexOf(edge)}/label`;
+        if (!label) add("DECISION_CONDITION_MISSING", path, [node.id, edge.id], "\u5224\u65AD\u51FA\u53E3\u5FC5\u987B\u6709\u975E\u7A7A\u6761\u4EF6\uFF0C\u4E0D\u80FD\u81EA\u52A8\u63A8\u65AD\u662F\u6216\u5426\u3002");
+        else if (conditions.has(label)) add("DECISION_CONDITION_DUPLICATE", path, [node.id, edge.id], "\u540C\u4E00\u5224\u65AD\u8282\u70B9\u7684\u51FA\u53E3\u6761\u4EF6\u5FC5\u987B\u53EF\u533A\u5206\u3002");
+        if (label) conditions.add(label);
+      }
+    }
+    if (node.kind === "fork" && outgoing.filter((edge) => edge.kind === "control").length < 2) {
+      add("FORK_BRANCH_COUNT", `${prefix}/nodes/${i}/kind`, [node.id], "fork \u81F3\u5C11\u9700\u8981\u4E24\u4E2A control \u51FA\u53E3\u3002");
+    }
+    if (node.kind === "join" && (index.incoming.get(node.id) ?? []).filter((edge) => edge.kind === "control").length < 2) {
+      add("JOIN_BRANCH_COUNT", `${prefix}/nodes/${i}/kind`, [node.id], "join \u81F3\u5C11\u9700\u8981\u4E24\u4E2A control \u5165\u53E3\u3002");
+    }
+  });
+}
 function validateDocument(input) {
   const diagnostics = [];
   const add = (code, path, ids, message, severity = "error") => {
@@ -1422,27 +2299,7 @@ function validateDocument(input) {
   document.groups.forEach((group, i) => {
     if (!index.groupMembers.get(group.id)?.size) add("GROUP_EMPTY", `/groups/${i}`, [group.id], "\u5206\u7EC4\u5FC5\u987B\u76F4\u63A5\u6216\u901A\u8FC7\u5B50\u7EC4\u5305\u542B\u8282\u70B9\u3002");
   });
-  document.nodes.forEach((node, i) => {
-    const outgoing = index.outgoing.get(node.id) ?? [];
-    if (node.kind === "decision") {
-      const branches = outgoing.filter(isFlowEdge);
-      if (branches.length < 2) add("DECISION_BRANCH_COUNT", `/nodes/${i}/kind`, [node.id], "decision \u5728\u6D41\u7A0B\u5B50\u56FE\u4E2D\u81F3\u5C11\u9700\u8981\u4E24\u4E2A\u51FA\u53E3\uFF0Cdata/dependency \u4E0D\u8BA1\u5165\u3002");
-      const conditions = /* @__PURE__ */ new Set();
-      for (const edge of branches) {
-        const label = edge.label?.trim();
-        const edgeIndex = document.edges.indexOf(edge);
-        if (!label) add("DECISION_CONDITION_MISSING", `/edges/${edgeIndex}/label`, [node.id, edge.id], "\u5224\u65AD\u51FA\u53E3\u5FC5\u987B\u6709\u975E\u7A7A\u6761\u4EF6\uFF0C\u4E0D\u80FD\u81EA\u52A8\u63A8\u65AD\u662F\u6216\u5426\u3002");
-        else if (conditions.has(label)) add("DECISION_CONDITION_DUPLICATE", `/edges/${edgeIndex}/label`, [node.id, edge.id], "\u540C\u4E00\u5224\u65AD\u8282\u70B9\u7684\u51FA\u53E3\u6761\u4EF6\u5FC5\u987B\u53EF\u533A\u5206\u3002");
-        if (label) conditions.add(label);
-      }
-    }
-    if (node.kind === "fork" && outgoing.filter((edge) => edge.kind === "control").length < 2) {
-      add("FORK_BRANCH_COUNT", `/nodes/${i}/kind`, [node.id], "fork \u81F3\u5C11\u9700\u8981\u4E24\u4E2A control \u51FA\u53E3\u3002");
-    }
-    if (node.kind === "join" && (index.incoming.get(node.id) ?? []).filter((edge) => edge.kind === "control").length < 2) {
-      add("JOIN_BRANCH_COUNT", `/nodes/${i}/kind`, [node.id], "join \u81F3\u5C11\u9700\u8981\u4E24\u4E2A control \u5165\u53E3\u3002");
-    }
-  });
+  validateBranches(document, add);
   const seenPrimary = /* @__PURE__ */ new Set();
   let previous;
   (document.view.primaryPath ?? []).forEach((id, i) => {
@@ -1457,6 +2314,63 @@ function validateDocument(input) {
   });
   (document.view.collapsedGroups ?? []).forEach((id, i) => {
     if (!groups.has(id)) add("COLLAPSED_GROUP_MISSING", `/view/collapsedGroups/${i}`, [id], "\u521D\u59CB\u6298\u53E0\u72B6\u6001\u5F15\u7528\u7684\u7EC4\u4E0D\u5B58\u5728\u3002");
+  });
+  const interiors = document.spatial?.interiors ?? [];
+  const globalNodeIds = new Set(nodeIds);
+  const owners = /* @__PURE__ */ new Set();
+  let totalNodes = document.nodes.length;
+  let totalEdges = document.edges.length;
+  interiors.forEach((interior, i) => {
+    const prefix = `/spatial/interiors/${i}`;
+    if (!nodeIds.has(interior.owner)) add("SPATIAL_OWNER_MISSING", `${prefix}/owner`, [interior.owner], "\u5256\u9762 owner \u5FC5\u987B\u5F15\u7528\u603B\u89C8\u8282\u70B9\u3002");
+    if (owners.has(interior.owner)) add("SPATIAL_OWNER_DUPLICATE", `${prefix}/owner`, [interior.owner], "\u540C\u4E00\u4E2A\u603B\u89C8\u8282\u70B9\u53EA\u80FD\u5B9A\u4E49\u4E00\u4E2A\u5256\u9762\u3002");
+    owners.add(interior.owner);
+    totalNodes += interior.nodes.length;
+    totalEdges += interior.edges.length;
+    const localIds = new Set(interior.nodes.map((node) => node.id));
+    interior.nodes.forEach((node, j) => {
+      if (objectIds.has(node.id)) add("ID_DUPLICATE", `${prefix}/nodes/${j}/id`, [node.id], "\u603B\u89C8\u3001\u7EC4\u548C\u6240\u6709\u5256\u9762\u7684\u8282\u70B9 ID \u5FC5\u987B\u5728\u540C\u4E00\u547D\u540D\u7A7A\u95F4\u5185\u552F\u4E00\u3002");
+      objectIds.add(node.id);
+      globalNodeIds.add(node.id);
+      if (node.groupId && !groups.has(node.groupId)) add("NODE_GROUP_MISSING", `${prefix}/nodes/${j}/groupId`, [node.id, node.groupId], "\u5185\u90E8\u8282\u70B9\u5F15\u7528\u7684\u5206\u7EC4\u4E0D\u5B58\u5728\u3002");
+    });
+    interior.edges.forEach((edge, j) => {
+      const path = `${prefix}/edges/${j}`;
+      if (edgeIds.has(edge.id)) add("EDGE_ID_DUPLICATE", `${path}/id`, [edge.id], "\u603B\u89C8\u548C\u6240\u6709\u5256\u9762\u7684\u8FB9 ID \u5FC5\u987B\u5728\u6587\u6863\u5185\u552F\u4E00\u3002");
+      edgeIds.add(edge.id);
+      if (!localIds.has(edge.source)) add("EDGE_SOURCE_MISSING", `${path}/source`, [edge.id, edge.source], "\u5185\u90E8\u8FB9\u7684 source \u5FC5\u987B\u5F15\u7528\u540C\u4E00\u5256\u9762\u7684\u8282\u70B9\u3002");
+      if (!localIds.has(edge.target)) add("EDGE_TARGET_MISSING", `${path}/target`, [edge.id, edge.target], "\u5185\u90E8\u8FB9\u7684 target \u5FC5\u987B\u5F15\u7528\u540C\u4E00\u5256\u9762\u7684\u8282\u70B9\u3002");
+      if (isFlowEdge(edge) && !edge.directed) add("FLOW_EDGE_UNDIRECTED", `${path}/directed`, [edge.id], "control\u3001exception \u548C feedback \u6D41\u7A0B\u8FB9\u5FC5\u987B\u6709\u660E\u786E\u65B9\u5411\u3002");
+    });
+    validateBranches({ ...document, nodes: interior.nodes, edges: interior.edges, groups: [] }, add, prefix);
+  });
+  if (totalNodes > 100) add("SPATIAL_NODE_LIMIT", "/spatial/interiors", [], "\u603B\u89C8\u548C\u6240\u6709\u5256\u9762\u5408\u8BA1\u6700\u591A 100 \u4E2A\u8282\u70B9\u3002");
+  if (totalEdges > 300) add("SPATIAL_EDGE_LIMIT", "/spatial/interiors", [], "\u603B\u89C8\u548C\u6240\u6709\u5256\u9762\u5408\u8BA1\u6700\u591A 300 \u6761\u8FB9\u3002");
+  const modelIds = /* @__PURE__ */ new Set();
+  (document.spatial?.models ?? []).forEach((model, i) => {
+    const path = `/spatial/models/${i}/nodeId`;
+    if (!globalNodeIds.has(model.nodeId)) add("SPATIAL_MODEL_NODE_MISSING", path, [model.nodeId], "\u6A21\u578B\u5FC5\u987B\u5F15\u7528\u5DF2\u6709\u603B\u89C8\u6216\u5185\u90E8\u8282\u70B9\u3002");
+    if (modelIds.has(model.nodeId)) add("SPATIAL_MODEL_DUPLICATE", path, [model.nodeId], "\u540C\u4E00\u8282\u70B9\u53EA\u80FD\u5B9A\u4E49\u4E00\u4E2A\u6A21\u578B\u5916\u89C2\u3002");
+    modelIds.add(model.nodeId);
+  });
+  const scenarioIds = /* @__PURE__ */ new Set();
+  (document.spatial?.scenarios ?? []).forEach((scenario, i) => {
+    const path = `/spatial/scenarios/${i}`;
+    if (scenarioIds.has(scenario.id)) add("SPATIAL_SCENARIO_DUPLICATE", `${path}/id`, [scenario.id], "\u6F14\u793A\u573A\u666F ID \u5FC5\u987B\u552F\u4E00\u3002");
+    scenarioIds.add(scenario.id);
+    const stepIds = /* @__PURE__ */ new Set();
+    let durationMs = 0;
+    scenario.steps.forEach((step, j) => {
+      const stepPath = `${path}/steps/${j}`;
+      if (stepIds.has(step.id)) add("SPATIAL_STEP_DUPLICATE", `${stepPath}/id`, [scenario.id, step.id], "\u540C\u4E00\u573A\u666F\u7684\u6B65\u9AA4 ID \u5FC5\u987B\u552F\u4E00\u3002");
+      stepIds.add(step.id);
+      step.route.forEach((id, k) => {
+        if (!globalNodeIds.has(id)) add("SPATIAL_ROUTE_NODE_MISSING", `${stepPath}/route/${k}`, [scenario.id, step.id, id], "\u6F14\u793A\u8DEF\u5F84\u5FC5\u987B\u5F15\u7528\u5DF2\u6709\u603B\u89C8\u6216\u5185\u90E8\u8282\u70B9\u3002");
+      });
+      if (!globalNodeIds.has(step.focusId)) add("SPATIAL_FOCUS_NODE_MISSING", `${stepPath}/focusId`, [scenario.id, step.id, step.focusId], "\u6F14\u793A\u7126\u70B9\u5FC5\u987B\u5F15\u7528\u5DF2\u6709\u603B\u89C8\u6216\u5185\u90E8\u8282\u70B9\u3002");
+      durationMs += step.durationMs ?? 2200;
+    });
+    if (!Number.isSafeInteger(durationMs)) add("SPATIAL_DURATION_LIMIT", `${path}/steps`, [scenario.id], "\u573A\u666F\u603B\u65F6\u957F\u4E0D\u80FD\u8D85\u8FC7\u5B89\u5168\u6574\u6570\u8303\u56F4\u3002");
   });
   if (diagnostics.length === 0) {
     const visited = /* @__PURE__ */ new Set();
@@ -1590,24 +2504,29 @@ function runCli(main2) {
 // src/cli/generate.ts
 var escapeHtml = (s) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 async function main() {
-  const args = parseArguments(process.argv.slice(2), ["--output"], ["--overwrite"]);
-  const help = "\u7528\u6CD5\uFF1Anode generate.mjs input.diagram.json --output output.html [--overwrite]\n\u4EC5\u9700 Node.js 24\uFF1B\u751F\u6210\u5B8C\u6210\u540E\u4ECD\u9700\u6D4F\u89C8\u5668\u89C6\u89C9\u68C0\u67E5\u3002";
+  const args = parseArguments(process.argv.slice(2), ["--output", "--renderer"], ["--overwrite"]);
+  const help = "\u7528\u6CD5\uFF1Anode generate.mjs input.diagram.json --output output.html [--renderer 2d|3d] [--overwrite]\n\u9ED8\u8BA4 2d\uFF1B\u4EC5\u9700 Node.js 24\uFF1B\u751F\u6210\u5B8C\u6210\u540E\u4ECD\u9700\u6D4F\u89C8\u5668\u89C6\u89C9\u68C0\u67E5\u3002";
   if (args.flags.has("--help")) {
     console.log(help);
     return;
   }
   if (!args.input || !args.values.has("--output")) throw new InputError(help);
+  const renderer = args.values.get("--renderer") ?? "2d";
+  if (renderer !== "2d" && renderer !== "3d") throw new InputError("--renderer \u5FC5\u987B\u662F 2d \u6216 3d\u3002");
   const output = resolve2(args.values.get("--output"));
   const overwrite = args.flags.has("--overwrite");
   requireExtension(output, [".html", ".htm"]);
   await checkOutput(output, overwrite, args.input);
   const { document: doc, diagnostics } = await readDocument(args.input);
   const assets = resolve2(dirname2(fileURLToPath(import.meta.url)), "../assets");
-  const [template, css, js] = (await Promise.all(["template.html", "viewer.css", "viewer.js"].map((file) => readFile(resolve2(assets, file), "utf8")))).map((content) => content.replace(/\r\n?/g, "\n"));
-  const values = { TITLE: escapeHtml(doc.title), CSS: css, JS: js.replace(/<\/script/gi, "<\\/script"), DATA: JSON.stringify(doc).replace(/</g, "\\u003c").replace(/\u2028/g, "\\u2028").replace(/\u2029/g, "\\u2029"), SUMMARY: `<ul>${doc.nodes.map((n) => `<li>${escapeHtml(n.label)}${n.summary ? `\uFF1A${escapeHtml(n.summary)}` : ""}</li>`).join("")}</ul>` };
-  const html = template.replace(/__(TITLE|CSS|JS|DATA|SUMMARY)__/g, (_, key) => values[key]);
+  const files = renderer === "3d" ? ["spatial-template.html", "spatial.css", "spatial.js"] : ["template.html", "viewer.css", "viewer.js"];
+  const [template, css, js] = (await Promise.all(files.map((file) => readFile(resolve2(assets, file), "utf8")))).map((content) => content.replace(/\r\n?/g, "\n"));
+  const license = renderer === "3d" ? await readFile(resolve2(assets, "../references/licenses/three.txt"), "utf8") : "";
+  const nodes = [...doc.nodes, ...renderer === "3d" ? doc.spatial?.interiors?.flatMap((interior) => interior.nodes) ?? [] : []];
+  const values = { TITLE: escapeHtml(doc.title), CSS: css, JS: js.replace(/<\/script/gi, "<\\/script"), DATA: JSON.stringify(doc).replace(/</g, "\\u003c").replace(/\u2028/g, "\\u2028").replace(/\u2029/g, "\\u2029"), SUMMARY: `<ul>${nodes.map((n) => `<li>${escapeHtml(n.label)}${n.summary ? `\uFF1A${escapeHtml(n.summary)}` : ""}</li>`).join("")}</ul>`, LICENSE: license };
+  const html = template.replace(/__(TITLE|CSS|JS|DATA|SUMMARY|LICENSE)__/g, (_, key) => values[key]);
   await atomicWrite(output, html, overwrite);
-  console.log(JSON.stringify({ output, bytes: Buffer.byteLength(html), diagnostics, status: "assembled; browser validation required" }));
+  console.log(JSON.stringify({ output, renderer, bytes: Buffer.byteLength(html), diagnostics, status: "assembled; browser validation required" }));
 }
 runCli(main);
 export {

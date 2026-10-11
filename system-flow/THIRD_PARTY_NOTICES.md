@@ -16,6 +16,7 @@ The offline viewer includes the following libraries. Their installed upstream li
 | d3-color | 3.1.0 | [ISC](references/licenses/d3-color.txt) | [upstream](https://github.com/d3/d3-color) |
 | d3-timer | 3.0.1 | [ISC](references/licenses/d3-timer.txt) | [upstream](https://github.com/d3/d3-timer) |
 | d3-ease | 3.0.1 | [BSD-3-Clause](references/licenses/d3-ease.txt) | [upstream](https://github.com/d3/d3-ease) |
+| three | 0.186.1 | [MIT](references/licenses/three.txt) | [upstream](https://github.com/mrdoob/three.js) |
 
 ELK is upstream code distributed under EPL-2.0. The corresponding elkjs wrapper and build sources are available at [elkjs 0.11.0](https://github.com/kieler/elkjs/tree/0.11.0); its [build definition](https://raw.githubusercontent.com/kieler/elkjs/0.11.0/build.gradle) identifies the Eclipse Layout Kernel modules incorporated into the worker. The underlying Java layout sources are in the [Eclipse Layout Kernel repository](https://github.com/eclipse-elk/elk). The application embeds the installed upstream `elk-worker.min.js` without changing its layout algorithms.
 

@@ -46,6 +46,9 @@ runCli(async () => {
   if (!options) { console.log(exportHelp); return; }
   await checkOutput(options.output, options.overwrite, options.input);
   const html = await readInput(options.input);
+  if (/<html\b[^>]*\bdata-system-flow-renderer\s*=\s*["']3d["']/i.test(html)) {
+    throw new InputError('3D HTML 暂不支持 SVG/PNG/JPEG 自动导出；请用同一图数据生成 --renderer 2d 后导出。');
+  }
   const { chromium } = await loadPlaywright();
   const browser = await chromium.launch({ channel: 'chromium', args: ['--disable-gpu'] });
   try {

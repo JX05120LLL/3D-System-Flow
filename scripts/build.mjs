@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { generateSchema, repositoryRoot, schemaOutputs } from './schema.mjs';
 import { generateNotices } from './notices.mjs';
 
-export const bundleOutputs = ['system-flow/assets/viewer.js', ...['generate', 'validate', 'export'].map(name => `system-flow/scripts/${name}.mjs`)];
+export const bundleOutputs = ['system-flow/assets/viewer.js', 'system-flow/assets/spatial.js', ...['generate', 'validate', 'export'].map(name => `system-flow/scripts/${name}.mjs`)];
 export const manifestPath = 'system-flow/assets/build-manifest.json';
 const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
 
@@ -32,6 +32,7 @@ export async function buildProject({ outputRoot = repositoryRoot, logLevel = 'in
   for (const name of ['generate', 'validate', 'export']) {
     await build({ ...common, entryPoints: [`src/cli/${name}.ts`], outfile: join(outputRoot, `system-flow/scripts/${name}.mjs`), platform: 'node', format: 'esm', external: ['playwright'], banner: { js: '#!/usr/bin/env node' } });
   }
+  await build({ ...common, entryPoints:['src/spatial/main.ts'], outfile:join(outputRoot,'system-flow/assets/spatial.js'), format:'iife', platform:'browser', minify:true });
   const notices = await generateNotices({ outputRoot });
   const pkg = JSON.parse(await readFile(join(repositoryRoot, 'package.json'), 'utf8'));
   const skill = JSON.parse(await readFile(join(repositoryRoot, 'system-flow/package.json'), 'utf8'));
