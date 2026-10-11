@@ -46,7 +46,7 @@ def collect_files(source: Path) -> list[tuple[str, bytes]]:
             relative = path.relative_to(source).as_posix()
             files.append((f"system-flow/{relative}", path.read_bytes()))
     files.sort(key=lambda item: item[0])
-    required = {"system-flow/SKILL.md", "system-flow/package.json", "system-flow/assets/viewer.js", "system-flow/assets/spatial.js", "system-flow/assets/spatial-template.html", "system-flow/assets/spatial.css", "system-flow/examples/microservices-spatial.diagram.json", "system-flow/examples/document-pipeline-spatial.diagram.json", "system-flow/references/licenses/three.txt", "system-flow/references/spatial.md", "system-flow/scripts/generate.mjs"}
+    required = {"system-flow/SKILL.md", "system-flow/package.json", "system-flow/assets/viewer.js", "system-flow/assets/spatial.js", "system-flow/assets/spatial-template.html", "system-flow/assets/spatial.css", "system-flow/examples/microservices-spatial.diagram.json", "system-flow/examples/document-pipeline-spatial.diagram.json", "system-flow/examples/document-pipeline-navigation.diagram.json", "system-flow/references/licenses/three.txt", "system-flow/references/spatial.md", "system-flow/references/evidence.md", "system-flow/scripts/generate.mjs"}
     missing = required.difference(name for name, _ in files)
     if missing:
         raise ValueError(f"Incomplete skill directory; missing: {', '.join(sorted(missing))}")

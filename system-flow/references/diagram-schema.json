@@ -10,6 +10,8 @@
     "id": { "$ref": "#/definitions/nonEmptyText" },
     "title": { "$ref": "#/definitions/nonEmptyText" },
     "description": { "type": "string" },
+    "sourceRevision": { "$ref": "#/definitions/sourceRevision" },
+    "navigation": { "$ref": "#/definitions/navigation" },
     "view": {
       "type": "object", "additionalProperties": false,
       "required": ["kind", "direction", "theme"],
@@ -41,7 +43,8 @@
       "type": "object", "additionalProperties": false, "required": ["path"],
       "properties": {
         "path": { "$ref": "#/definitions/nonEmptyText" },
-        "line": { "type": "integer", "minimum": 1 }
+        "line": { "type": "integer", "minimum": 1 },
+        "sha256": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" }
       }
     },
     "sources": { "type": "array", "items": { "$ref": "#/definitions/source" } },
@@ -105,8 +108,80 @@
         "description": { "type": "string" },
         "route": { "type": "array", "minItems": 1, "maxItems": 300, "items": { "$ref": "#/definitions/nonEmptyText" } },
         "focusId": { "$ref": "#/definitions/nonEmptyText" },
+        "viewId": { "$ref": "#/definitions/nonEmptyText" },
+        "evidenceStatus": { "$ref": "#/definitions/evidenceStatus" },
+        "sources": { "$ref": "#/definitions/sources" },
         "tone": { "enum": ["request", "data", "success", "failure"] },
         "durationMs": { "type": "integer", "minimum": 1, "maximum": 9007199254740991 }
+      }
+    },
+    "sourceRevision": {
+      "type": "object", "additionalProperties": false, "required": ["commit"],
+      "properties": {
+        "commit": { "type": "string", "pattern": "^(?:[a-fA-F0-9]{40}|[a-fA-F0-9]{64})$" },
+        "dirty": { "type": "boolean" }
+      }
+    },
+    "viewDocument": {
+      "type": "object", "additionalProperties": false,
+      "required": ["schemaVersion", "id", "title", "view", "nodes", "edges", "groups"],
+      "properties": {
+        "schemaVersion": { "$ref": "#/properties/schemaVersion" },
+        "id": { "$ref": "#/definitions/nonEmptyText" },
+        "title": { "$ref": "#/definitions/nonEmptyText" },
+        "description": { "type": "string" },
+        "sourceRevision": { "$ref": "#/definitions/sourceRevision" },
+        "view": { "$ref": "#/properties/view" },
+        "nodes": { "$ref": "#/properties/nodes" },
+        "edges": { "$ref": "#/properties/edges" },
+        "groups": { "$ref": "#/properties/groups" },
+        "spatial": {
+          "type": "object", "additionalProperties": false,
+          "properties": {
+            "interiors": { "$ref": "#/properties/spatial/properties/interiors" },
+            "models": { "$ref": "#/properties/spatial/properties/models" }
+          }
+        }
+      }
+    },
+    "viewEndpoint": {
+      "type": "object", "additionalProperties": false, "required": ["viewId", "nodeId"],
+      "properties": {
+        "viewId": { "$ref": "#/definitions/nonEmptyText" },
+        "nodeId": { "$ref": "#/definitions/nonEmptyText" }
+      }
+    },
+    "navigation": {
+      "type": "object", "additionalProperties": false, "required": ["views"],
+      "properties": {
+        "views": {
+          "type": "array", "maxItems": 20,
+          "items": {
+            "type": "object", "additionalProperties": false, "required": ["parentId", "ownerId", "document"],
+            "properties": {
+              "parentId": { "$ref": "#/definitions/nonEmptyText" },
+              "ownerId": { "$ref": "#/definitions/nonEmptyText" },
+              "document": { "$ref": "#/definitions/viewDocument" }
+            }
+          }
+        },
+        "bridges": {
+          "type": "array", "maxItems": 300,
+          "items": {
+            "type": "object", "additionalProperties": false, "required": ["id", "source", "target", "kind", "directed"],
+            "properties": {
+              "id": { "$ref": "#/definitions/nonEmptyText" },
+              "source": { "$ref": "#/definitions/viewEndpoint" },
+              "target": { "$ref": "#/definitions/viewEndpoint" },
+              "kind": { "$ref": "#/definitions/edge/properties/kind" },
+              "directed": { "type": "boolean" },
+              "label": { "type": "string" },
+              "details": { "$ref": "#/definitions/details" },
+              "evidenceStatus": { "$ref": "#/definitions/evidenceStatus" },
+              "sources": { "$ref": "#/definitions/sources" }
+            }
+          }
+        }
       }
     },
     "group": {

@@ -1,19 +1,25 @@
 import type { DiagramDocument } from '../model/types';
 import { buildGraphIndex, findRelated } from '../model/graph-index';
+import { buildNavigation } from '../model/navigation';
 import type { DemoState, ModuleId, WorldController, WorldMode } from './contracts';
 import { normalizeScene, ownerOf } from './scene';
 import { createWorld } from './world';
 import { createPlayback } from './playback';
 
-const overview = JSON.parse(document.getElementById('blueprint-data')!.textContent!) as DiagramDocument;
-const scene = normalizeScene(overview);
-const services = scene.documents;
-const moduleIds = scene.moduleIds;
+const rootDocument = JSON.parse(document.getElementById('blueprint-data')!.textContent!) as DiagramDocument;
+const navigation = buildNavigation(rootDocument);
+let viewId = rootDocument.id;
+let scene = normalizeScene(rootDocument);
+const sceneCache = new Map([[viewId, scene]]);
+const scenarios = scene.scenarios;
+let overview = scene.document;
+let services = scene.documents;
+let moduleIds = scene.moduleIds;
 const serviceOfNode = (id: string | null) => ownerOf(scene,id);
-const { getSteps:getDemoSteps, createState:createDemoState, stepDuration, play, pause, next, previous, reset, changeScenario, advance, progress } = createPlayback(scene.scenarios);
-const overviewIndex = buildGraphIndex(overview);
-const internalIndexes = new Map(moduleIds.map(id => [id, buildGraphIndex(services[id]!)]));
-const nodeMap = new Map([...overview.nodes, ...moduleIds.flatMap(id => services[id]!.nodes)].map(node => [node.id, node]));
+const { getSteps:getDemoSteps, createState:createDemoState, stepDuration, play, pause, next, previous, reset, changeScenario, advance, progress } = createPlayback(scenarios);
+let overviewIndex = buildGraphIndex(overview);
+let internalIndexes = new Map(moduleIds.map(id => [id, buildGraphIndex(services[id]!)]));
+let nodeMap = new Map([...overview.nodes, ...moduleIds.flatMap(id => services[id]!.nodes)].map(node => [node.id, node]));
 const el = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id)! as T;
 const select = el<HTMLSelectElement>('node-select');
 const context = el('context-card');
@@ -42,6 +48,62 @@ function buttonLabel(id: string, label: string) {
 function stopClock() { cancelAnimationFrame(frame); frame = 0; lastTime = null; }
 function pausePlayback() { demo = pause(demo); stopClock(); updatePlayer(); }
 function manualNavigation() { pausePlayback(); appliedStep = null; world.setDemo(null, 0); }
+function populateObjects() {
+  select.replaceChildren(new Option('选择模块或组件', ''));
+  const rootGroup = document.createElement('optgroup'); rootGroup.label = '系统模块';
+  for (const node of overview.nodes) rootGroup.append(new Option(node.label, node.id));
+  select.append(rootGroup);
+  for (const id of moduleIds) {
+    const group = document.createElement('optgroup'); group.label = `${nodeMap.get(id)!.label}内部`;
+    for (const node of services[id]!.nodes) group.append(new Option(node.label, node.id));
+    select.append(group);
+  }
+}
+function updateNavigation() {
+  document.documentElement.dataset.viewId = viewId;
+  const trail = el('view-breadcrumbs');
+  trail.hidden = !rootDocument.navigation?.views.length;
+  document.documentElement.dataset.navigation = String(!trail.hidden);
+  trail.replaceChildren();
+  for (const view of [...navigation.getAncestors(viewId), overview]) {
+    const button = document.createElement('button');
+    button.textContent = view.title; button.dataset.viewId = view.id;
+    if (view.id === viewId) { button.disabled = true; button.setAttribute('aria-current', 'page'); }
+    else button.addEventListener('click', () => navigateToView(view.id));
+    trail.append(button);
+  }
+  el('back-view').hidden = viewId === navigation.rootId;
+  updateNavigationClearance();
+}
+function updateNavigationClearance() {
+  const trail = el('view-breadcrumbs');
+  const clearance = trail.hidden ? 0 : Math.ceil(trail.getBoundingClientRect().bottom + 12);
+  document.documentElement.style.setProperty('--navigation-clearance', `${clearance}px`);
+}
+function switchView(id: string) {
+  if (id === viewId) return;
+  if (!navigation.getView(id)) throw new Error(`未知视图：${id}`);
+  world.dispose();
+  viewId = id;
+  scene = sceneCache.get(id) ?? normalizeScene(rootDocument, id); sceneCache.set(id, scene);
+  overview = scene.document; services = scene.documents; moduleIds = scene.moduleIds;
+  overviewIndex = buildGraphIndex(overview);
+  internalIndexes = new Map(moduleIds.map(owner => [owner, buildGraphIndex(services[owner]!)]));
+  nodeMap = new Map([...overview.nodes, ...moduleIds.flatMap(owner => services[owner]!.nodes)].map(node => [node.id, node]));
+  selectedId = null; highlight = 'none'; isolated = false; detailsExpanded = false; appliedStep = null;
+  context.hidden = true;
+  for (const property of ['left', 'top', 'visibility']) context.style.removeProperty(property);
+  el('hover-hint').hidden = true;
+  world = createWorld(el('stage'), scene, choose); world.setMode(mode);
+  document.documentElement.dataset.renderer = world.renderer;
+  el('fallback').hidden = world.renderer !== 'unavailable';
+  populateObjects(); setOpenModules([], false); updateNavigation(); applySelection();
+}
+function navigateToView(id: string, focusId?: string) {
+  manualNavigation(); switchView(id); choose(focusId ?? null); closeExplorer(false);
+  if (!focusId) { setOpenModules([]); world.reset(); }
+  applySelection();
+}
 function setOpenModules(ids: Iterable<ModuleId>, animate = true) {
   openModules = new Set(ids); world.setOpenModules([...openModules], animate);
   document.documentElement.dataset.openModules = [...openModules].join(',');
@@ -78,9 +140,31 @@ function choose(id: string | null) {
   if (id) world.focus(id);
 }
 function returnOverview() {
+  if (viewId !== navigation.rootId) switchView(navigation.rootId);
   manualNavigation(); selectedId = null; highlight = 'none'; isolated = false; detailsExpanded = false;
   setOpenModules([]); applySelection(); world.reset();
   el('reset-view').focus({ preventScroll: true });
+}
+function updateBridges() {
+  const container = el('bridge-links');
+  const bridges = selectedId ? navigation.getBridges(viewId, selectedId) : [];
+  container.hidden = !detailsExpanded || bridges.length === 0;
+  container.replaceChildren();
+  const evidence = { confirmed: '已证实', assumed: '假设', planned: '规划' };
+  for (const bridge of bridges) {
+    const item = document.createElement('div');
+    const text = document.createElement('p');
+    const endpointLabel = (endpoint: typeof bridge.source) => `${navigation.getView(endpoint.viewId)!.title} · ${navigation.getNode(endpoint.viewId, endpoint.nodeId)!.label} (${endpoint.viewId}/${endpoint.nodeId})`;
+    text.textContent = [bridge.label ?? '视图关联', `${endpointLabel(bridge.source)} ${bridge.directed ? '→' : '—'} ${endpointLabel(bridge.target)}`,
+      `${bridge.kind} · ${bridge.evidenceStatus ? evidence[bridge.evidenceStatus] : '依据未标注'}`, bridge.details ?? '',
+      ...(bridge.sources ?? []).map(source => `来源：${source.path}${source.line ? `:${source.line}` : ''}`)].filter(Boolean).join('\n');
+    const target = bridge.source.viewId === viewId && bridge.source.nodeId === selectedId ? bridge.target : bridge.source;
+    const button = document.createElement('button');
+    button.dataset.bridgeId = bridge.id; button.dataset.targetViewId = target.viewId; button.dataset.targetNodeId = target.nodeId;
+    button.textContent = `前往 ${navigation.getView(target.viewId)!.title} · ${navigation.getNode(target.viewId, target.nodeId)!.label}`;
+    button.addEventListener('click', () => navigateToView(target.viewId, target.nodeId));
+    item.append(text, button); container.append(item);
+  }
 }
 function updateContext() {
   const node = selectedId ? nodeMap.get(selectedId) : undefined;
@@ -96,6 +180,8 @@ function updateContext() {
   const details = node ? fullDetails(node.id) : '';
   setText('context-details', teachingStep ? `${details}\n\n${teachingStep.description}` : details);
   el('context-details').hidden = !detailsExpanded;
+  updateBridges();
+  el('enter-view').hidden = !selectedId || !navigation.getChild(viewId, selectedId);
   el('more-details').setAttribute('aria-expanded', String(detailsExpanded));
   buttonLabel('more-details', detailsExpanded ? '收起职责说明' : '查看完整职责');
   el('toggle-shell').hidden = !owner;
@@ -110,8 +196,8 @@ function updateContext() {
     el<HTMLButtonElement>(id).disabled = !node;
     if (value !== 'none') buttonLabel(id, `${value === 'upstream' ? '上游' : '下游'}${value === highlight && related ? ` · ${related.nodeIds.size} 个节点` : ''}`);
   }
-  el('back-overview').hidden = !node && openModules.size === 0;
-  setText('view-label', owner && openModules.has(owner) ? `${nodeMap.get(owner)!.label} / 内部` : '系统总览');
+  el('back-overview').hidden = viewId === navigation.rootId && !node && openModules.size === 0;
+  setText('view-label', owner && openModules.has(owner) ? `${nodeMap.get(owner)!.label} / 内部` : viewId === navigation.rootId ? '系统总览' : overview.title);
   select.value = selectedId ?? '';
   for (const id of ['spatial-view', 'flat-view', 'reset-view']) el<HTMLButtonElement>(id).disabled = world.renderer !== 'webgl';
   el('flat-view').setAttribute('aria-pressed', String(mode === 'flat'));
@@ -137,9 +223,10 @@ function updatePlayer() {
 }
 function renderPlayback() {
   const steps = getDemoSteps(demo.scenario), step = demo.index >= 0 ? steps[demo.index] ?? null : null;
-  if (step && appliedStep !== `${demo.scenario}/${step.id}`) {
+  if (step && (viewId !== step.viewId || appliedStep !== `${demo.scenario}/${step.id}`)) {
+    switchView(step.viewId ?? navigation.rootId);
     // Reconstruct on backward steps too, so a later service cannot stay open prematurely.
-    setOpenModules(steps.slice(0, demo.index + 1).flatMap(item => [...item.openModules]));
+    setOpenModules(steps.slice(0, demo.index + 1).filter(item => item.viewId === viewId).flatMap(item => [...item.openModules]));
     selectedId = step.focusId; highlight = 'none'; isolated = false; detailsExpanded = false;
     appliedStep = `${demo.scenario}/${step.id}`;
     applySelection();
@@ -156,17 +243,18 @@ function schedulePlayback() {
   });
 }
 function togglePlayback() {
-  if (!scene.scenarios.length) return;
+  if (!scenarios.length) return;
   if (demo.status === 'playing') pausePlayback();
   else {
-    if (demo.status === 'idle' || demo.status === 'complete') { setOpenModules([]); world.reset(); appliedStep = null; }
+    if (demo.status === 'idle' || demo.status === 'complete') { switchView(navigation.rootId); setOpenModules([]); world.reset(); appliedStep = null; }
     demo = play(demo); lastTime = null; renderPlayback(); schedulePlayback();
   }
 }
-function stepForward() { if (!scene.scenarios.length) return; stopClock(); demo = next(demo); renderPlayback(); }
-function stepBackward() { if (!scene.scenarios.length) return; stopClock(); demo = previous(demo); renderPlayback(); }
+function stepForward() { if (!scenarios.length) return; stopClock(); demo = next(demo); renderPlayback(); }
+function stepBackward() { if (!scenarios.length) return; stopClock(); demo = previous(demo); renderPlayback(); }
 function resetPlayback(scenario?: string) {
   stopClock(); demo = scenario ? changeScenario(scenario) : reset(demo);
+  switchView(navigation.rootId);
   appliedStep = null; selectedId = null; highlight = 'none'; isolated = false; detailsExpanded = false;
   world.setDemo(null, 0); setOpenModules([]); world.reset(); applySelection(); updatePlayer();
 }
@@ -178,17 +266,12 @@ function closeExplorer(restoreFocus = true) {
 world = createWorld(el('stage'), scene, choose);
 document.documentElement.dataset.renderer = world.renderer;
 if (world.renderer === 'unavailable') el('fallback').hidden = false;
-select.replaceChildren(new Option('选择模块或组件', ''));
-const rootGroup = document.createElement('optgroup'); rootGroup.label = '系统模块';
-for (const node of overview.nodes) rootGroup.append(new Option(node.label, node.id));
-select.append(rootGroup);
-for (const id of moduleIds) {
-  const group = document.createElement('optgroup'); group.label = `${nodeMap.get(id)!.label}内部`;
-  for (const node of services[id]!.nodes) group.append(new Option(node.label,node.id));
-  select.append(group);
-}
-el<HTMLSelectElement>('demo-scenario').replaceChildren(...scene.scenarios.map(scenario => new Option(scenario.label,scenario.id)));
-el('demo-dock').hidden = scene.scenarios.length === 0;
+populateObjects(); updateNavigation();
+const navigationObserver = new ResizeObserver(updateNavigationClearance);
+navigationObserver.observe(el('view-breadcrumbs'));
+window.addEventListener('resize', updateNavigationClearance);
+el<HTMLSelectElement>('demo-scenario').replaceChildren(...scenarios.map(scenario => new Option(scenario.label,scenario.id)));
+el('demo-dock').hidden = scenarios.length === 0;
 setOpenModules([]); updateContext(); updatePlayer();
 select.addEventListener('change', () => {
   choose(select.value || null); closeExplorer(false);
@@ -201,6 +284,8 @@ el('explore-toggle').addEventListener('click', () => {
 });
 el('explorer-close').addEventListener('click', () => closeExplorer());
 el('back-overview').addEventListener('click', returnOverview);
+el('back-view').addEventListener('click', () => { const entry = navigation.getEntry(viewId); if (entry) navigateToView(entry.parentId); });
+el('enter-view').addEventListener('click', () => { const entry = selectedId && navigation.getChild(viewId, selectedId); if (entry) navigateToView(entry.document.id); });
 el('close-context').addEventListener('click', () => { choose(null); el('explore-toggle').focus({preventScroll:true}); });
 el('focus-node').addEventListener('click', () => { if (selectedId) { pausePlayback(); world.focus(selectedId); } });
 el('reset-view').addEventListener('click', () => { pausePlayback(); world.reset(); });
@@ -243,7 +328,7 @@ for (const overlay of [context,el('explorer')]) {
 }
 document.addEventListener('keydown',event=>{
   if (event.key==='Escape') {
-    if (!el('explorer').hidden) closeExplorer(); else if (selectedId || openModules.size) returnOverview();
+    if (!el('explorer').hidden) closeExplorer(); else if (selectedId || openModules.size || viewId !== navigation.rootId) returnOverview();
     return;
   }
   const target=event.target as HTMLElement | null;
@@ -253,8 +338,11 @@ document.addEventListener('keydown',event=>{
   if (event.key==='ArrowLeft') { event.preventDefault(); stepBackward(); }
 });
 document.addEventListener('visibilitychange', () => { if (document.hidden) pausePlayback(); });
-window.addEventListener('pagehide',event=>{ pausePlayback(); if (!event.persisted) world.dispose(); });
+window.addEventListener('pagehide',event=>{
+  pausePlayback();
+  if (!event.persisted) { navigationObserver.disconnect(); window.removeEventListener('resize', updateNavigationClearance); world.dispose(); }
+});
 Object.defineProperty(globalThis,'__sandboxPrototype',{value:{
-  state:()=>({...world.state(),highlight,detailsExpanded,related:relatedSelection() ? [...relatedSelection()!.nodeIds] : [],
+  state:()=>({...world.state(),viewId,viewPath:[...navigation.getAncestors(viewId).map(view => view.id),viewId],highlight,detailsExpanded,related:relatedSelection() ? [...relatedSelection()!.nodeIds] : [],
     demo:{...demo,stepsTotal:getDemoSteps(demo.scenario).length,stepId:demo.index>=0 ? getDemoSteps(demo.scenario)[demo.index]?.id : null}}),
 }});

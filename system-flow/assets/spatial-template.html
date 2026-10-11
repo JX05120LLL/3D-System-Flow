@@ -25,7 +25,9 @@
         <button id="show-all" class="icon-button" title="恢复全部关联" aria-label="恢复全部关联" aria-pressed="true"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="2"/><path d="M10 3v3m0 8v3M3 10h3m8 0h3M5 5l2 2m6 6 2 2M5 15l2-2m6-6 2-2"/></svg></button>
         <button id="isolate-node" class="icon-button" title="单独查看模块" aria-label="单独查看模块" aria-pressed="false"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m10 5 4 2.5v5L10 15l-4-2.5v-5Zm0 5L6 7.5m4 2.5 4-2.5m-4 2.5v5M3 3v3m0-3h3m11 0h-3m3 0v3M3 17v-3m0 3h3m11 0h-3m3 0v-3"/></svg></button>
       </div>
+      <button id="enter-view" class="enter-view" hidden>进入细节</button>
       <div id="context-details" hidden></div>
+      <div id="bridge-links" class="bridge-links" aria-label="视图关联" hidden></div>
     </section>
     <div id="fallback" hidden><svg viewBox="0 0 32 32" aria-hidden="true"><path d="m16 4 12 7v14l-12 7-12-7V11Zm0 14L4 11m12 7 12-7m-12 7v14"/></svg><strong>3D 暂不可用</strong><p>打开模块选择，仍可查看职责并单步演示。</p></div>
   </main>
@@ -34,6 +36,7 @@
     <div class="brand" aria-label="System Flow"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M4 9 16 3l12 6v14l-12 6L4 23Zm0 0 12 7 12-7M16 16v13"/></svg><span>System Flow</span></div>
     <div class="scene-tools">
       <button id="back-overview" class="icon-button" title="返回系统总览" aria-label="返回系统总览" hidden><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m11 4-6 6 6 6M5 10h11"/></svg></button>
+      <button id="back-view" class="icon-button" title="返回父图" aria-label="返回父图" hidden><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m6 8 4-4 4 4M10 4v12M4 16h12"/></svg></button>
       <div class="view-controls" role="group" aria-label="视图模式">
         <button id="spatial-view" class="icon-button" title="立体视角" aria-label="立体视角" aria-pressed="true"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m10 2 7 4v8l-7 4-7-4V6Zm0 8L3 6m7 4 7-4m-7 4v8"/></svg></button>
         <button id="flat-view" class="icon-button" title="俯视视角" aria-label="俯视视角" aria-pressed="false"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m10 3 7 4-7 4-7-4Zm-7 9 7 4 7-4"/></svg></button>
@@ -43,6 +46,7 @@
       <button id="explore-toggle" class="icon-button" title="选择模块" aria-label="选择模块" aria-expanded="false" aria-controls="explorer"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="3" width="5" height="5" rx=".5"/><rect x="12" y="3" width="5" height="5" rx=".5"/><rect x="3" y="12" width="5" height="5" rx=".5"/><rect x="12" y="12" width="5" height="5" rx=".5"/></svg></button>
     </div>
   </header>
+  <nav id="view-breadcrumbs" class="view-breadcrumbs" aria-label="视图层级" hidden></nav>
   <section id="explorer" class="explorer" aria-label="模块选择" hidden>
     <div class="explorer-heading"><label for="node-select">选择模块</label><button id="explorer-close" class="icon-button" title="关闭模块选择" aria-label="关闭模块选择"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 5 10 10M15 5 5 15"/></svg></button></div>
     <select id="node-select"><option value="">选择一个模块</option></select>

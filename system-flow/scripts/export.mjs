@@ -85,7 +85,9 @@ var require_equal = __commonJS({
 var func3 = require_ucs2length().default;
 var func0 = require_equal().default;
 var pattern0 = new RegExp("\\S", "u");
-var pattern16 = new RegExp("^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$", "u");
+var pattern2 = new RegExp("^(?:[a-fA-F0-9]{40}|[a-fA-F0-9]{64})$", "u");
+var pattern14 = new RegExp("^[a-fA-F0-9]{64}$", "u");
+var pattern23 = new RegExp("^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$", "u");
 
 // src/model/validate.ts
 var MAX_DOCUMENT_BYTES = 2 * 1024 * 1024;

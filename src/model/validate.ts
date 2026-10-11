@@ -1,6 +1,8 @@
 import type { ErrorObject, ValidateFunction } from 'ajv';
 import validateSchema from './validator.generated.js';
 import { buildGraphIndex, findRelated, isFlowEdge } from './graph-index.ts';
+import { buildNavigation } from './navigation.ts';
+import { collectEvidenceWarnings } from './evidence.ts';
 import type { Diagnostic, DiagramDocument, DiagramEdge, ValidationResult } from './types.ts';
 
 export const MAX_DOCUMENT_BYTES = 2 * 1024 * 1024;
@@ -68,6 +70,49 @@ export function validateDocument(input: unknown): ValidationResult {
     return { valid: false, diagnostics: (compiledValidator.errors ?? []).map(schemaDiagnostic) };
   }
   const document = input as DiagramDocument;
+  const navigation = buildNavigation(document);
+  const viewIds = new Set([document.id]);
+  const entryIds = new Map<string, Set<string>>();
+  (document.navigation?.views ?? []).forEach((entry, i) => {
+    const prefix = `/navigation/views/${i}`;
+    if (viewIds.has(entry.document.id)) add('NAVIGATION_VIEW_DUPLICATE', `${prefix}/document/id`, [entry.document.id], '根图和子图的视图 ID 必须唯一。');
+    viewIds.add(entry.document.id);
+    if (!navigation.getView(entry.parentId)) add('NAVIGATION_PARENT_MISSING', `${prefix}/parentId`, [entry.parentId], '父视图必须引用根图或已定义的子图。');
+    else if (!navigation.getNode(entry.parentId, entry.ownerId)) add('NAVIGATION_OWNER_MISSING', `${prefix}/ownerId`, [entry.parentId, entry.ownerId], '子图入口必须引用父视图的总览或内部节点。');
+    const parentEntries = entryIds.get(entry.parentId) ?? new Set<string>();
+    if (parentEntries.has(entry.ownerId)) add('NAVIGATION_ENTRY_DUPLICATE', `${prefix}/ownerId`, [entry.parentId, entry.ownerId], '同一父视图节点只能映射一个子图。');
+    parentEntries.add(entry.ownerId); entryIds.set(entry.parentId, parentEntries);
+    const seen = new Set([entry.document.id]);
+    let parentId = entry.parentId;
+    let jumps = 0;
+    while (true) {
+      jumps += 1;
+      if (seen.has(parentId)) { add('NAVIGATION_CYCLE', `${prefix}/parentId`, [...seen, parentId], '子图父链不能形成循环。'); break; }
+      seen.add(parentId);
+      if (parentId === document.id) break;
+      const parentEntry = navigation.getEntry(parentId);
+      if (!parentEntry) {
+        add('NAVIGATION_ROOT_UNREACHABLE', `${prefix}/parentId`, [...seen], '每个子图父链必须连接到根图。'); break;
+      }
+      parentId = parentEntry.parentId;
+    }
+    if (jumps > 4) add('NAVIGATION_DEPTH_LIMIT', `${prefix}/parentId`, [...seen], '最多支持四次父子跳转；请合并层级。');
+    for (const diagnostic of validateDocument(entry.document).diagnostics) {
+      diagnostics.push({ ...diagnostic, path: `${prefix}/document${diagnostic.path}` });
+    }
+  });
+  const bridgeIds = new Set<string>();
+  (document.navigation?.bridges ?? []).forEach((bridge, i) => {
+    const prefix = `/navigation/bridges/${i}`;
+    if (bridgeIds.has(bridge.id)) add('NAVIGATION_BRIDGE_DUPLICATE', `${prefix}/id`, [bridge.id], '跨视图关联 ID 必须唯一。');
+    bridgeIds.add(bridge.id);
+    for (const end of ['source', 'target'] as const) {
+      const endpoint = bridge[end];
+      if (!navigation.getView(endpoint.viewId)) add('NAVIGATION_BRIDGE_VIEW_MISSING', `${prefix}/${end}/viewId`, [bridge.id, endpoint.viewId], '关联端点必须引用已有视图。');
+      else if (!navigation.getNode(endpoint.viewId, endpoint.nodeId)) add('NAVIGATION_BRIDGE_NODE_MISSING', `${prefix}/${end}/nodeId`, [bridge.id, endpoint.viewId, endpoint.nodeId], '关联端点必须引用该视图的总览或内部节点。');
+    }
+    if (['control', 'exception', 'feedback'].includes(bridge.kind) && !bridge.directed) add('FLOW_EDGE_UNDIRECTED', `${prefix}/directed`, [bridge.id], 'control、exception 和 feedback 关联必须有明确方向。');
+  });
   const nodeIds = new Set<string>();
   const objectIds = new Set<string>();
   const edgeIds = new Set<string>();
@@ -172,18 +217,21 @@ export function validateDocument(input: unknown): ValidationResult {
     let durationMs = 0;
     scenario.steps.forEach((step, j) => {
       const stepPath = `${path}/steps/${j}`;
+      const stepViewId = step.viewId ?? document.id;
+      const stepView = navigation.getView(stepViewId);
+      if (!stepView) add('SPATIAL_STEP_VIEW_MISSING', `${stepPath}/viewId`, [scenario.id, step.id, stepViewId], '演示步骤必须引用已有视图。');
       if (stepIds.has(step.id)) add('SPATIAL_STEP_DUPLICATE', `${stepPath}/id`, [scenario.id, step.id], '同一场景的步骤 ID 必须唯一。');
       stepIds.add(step.id);
       step.route.forEach((id, k) => {
-        if (!globalNodeIds.has(id)) add('SPATIAL_ROUTE_NODE_MISSING', `${stepPath}/route/${k}`, [scenario.id, step.id, id], '演示路径必须引用已有总览或内部节点。');
+        if (stepView && !navigation.getNode(stepViewId, id)) add('SPATIAL_ROUTE_NODE_MISSING', `${stepPath}/route/${k}`, [scenario.id, step.id, id], '演示路径必须引用步骤视图内的总览或内部节点。');
       });
-      if (!globalNodeIds.has(step.focusId)) add('SPATIAL_FOCUS_NODE_MISSING', `${stepPath}/focusId`, [scenario.id, step.id, step.focusId], '演示焦点必须引用已有总览或内部节点。');
+      if (stepView && !navigation.getNode(stepViewId, step.focusId)) add('SPATIAL_FOCUS_NODE_MISSING', `${stepPath}/focusId`, [scenario.id, step.id, step.focusId], '演示焦点必须引用步骤视图内的总览或内部节点。');
       durationMs += step.durationMs ?? 2200;
     });
     if (!Number.isSafeInteger(durationMs)) add('SPATIAL_DURATION_LIMIT', `${path}/steps`, [scenario.id], '场景总时长不能超过安全整数范围。');
   });
   // A disconnected graph is useful in some comparisons; report rather than discard it.
-  if (diagnostics.length === 0) {
+  if (!diagnostics.some(item => item.severity === 'error')) {
     const visited = new Set<string>();
     const components: string[][] = [];
     for (const node of document.nodes) {
@@ -207,6 +255,10 @@ export function validateDocument(input: unknown): ValidationResult {
       const unreachable = document.nodes.filter((node) => flowNodeIds.has(node.id) && !reached.has(node.id)).map((node) => node.id);
       if (unreachable.length > 0) add('GRAPH_UNREACHABLE', '/nodes', unreachable, '这些流程节点无法从任何 start 节点沿流程方向到达，请确认入口和边方向。', 'warning');
     }
+  }
+  const existing = new Set(diagnostics.map(item => `${item.code}\0${item.path}`));
+  for (const warning of collectEvidenceWarnings(document)) {
+    if (!existing.has(`${warning.code}\0${warning.path}`)) diagnostics.push(warning);
   }
   const valid = !diagnostics.some((diagnostic) => diagnostic.severity === 'error');
   return { valid, ...(valid ? { document } : {}), diagnostics };

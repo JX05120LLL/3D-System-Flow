@@ -5,6 +5,7 @@ import { dirname, resolve, join, relative, isAbsolute, basename } from 'node:pat
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { execFile, execFileSync } from 'node:child_process';
 import { promisify } from 'node:util';
+import { createHash } from 'node:crypto';
 const execute = promisify(execFile);
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const temp = await mkdtemp(join(tmpdir(), 'system-flow-package-'));
@@ -29,8 +30,21 @@ try {
   if (existsSync(join(skill, 'node_modules'))) throw new Error('复制时意外包含了 node_modules。');
   await run('validate before npm install', process.execPath, [join(skill, 'scripts/validate.mjs'), input]);
   await run('generate before npm install', process.execPath, [join(skill, 'scripts/generate.mjs'), input, '--output', html]);
+  const evidenceFile = join(cwd, '来源说明.txt');
+  const evidenceText = '仓库外文档取证\n本地只读核验\n';
+  await writeFile(evidenceFile, evidenceText);
+  const evidenceModel = structuredClone(model);
+  evidenceModel.nodes[0].evidenceStatus = 'confirmed';
+  evidenceModel.nodes[0].sources = [{ path: '来源说明.txt', line: 2, sha256: createHash('sha256').update(evidenceText).digest('hex') }];
+  const evidenceInput = join(cwd, '来源 图.json'); await writeFile(evidenceInput, JSON.stringify(evidenceModel));
+  const evidenceResult = await run('strict sources in standalone non-Git document directory before npm install', process.execPath, [join(skill, 'scripts/validate.mjs'), evidenceInput, '--repo-root', cwd, '--strict-sources']);
+  if (JSON.parse(evidenceResult.stdout).checks.sources.passed !== true) throw new Error('独立包来源核验未通过。');
+  evidenceModel.nodes[0].sources[0].line = 999; await writeFile(evidenceInput, JSON.stringify(evidenceModel));
+  const protectedOutput = join(cwd, '保留已有.html'); await writeFile(protectedOutput, 'keep original');
+  await run('strict source failure preserves existing HTML before npm install', process.execPath, [join(skill, 'scripts/generate.mjs'), evidenceInput, '--repo-root', cwd, '--strict-sources', '--output', protectedOutput, '--overwrite'], 2);
+  if (await readFile(protectedOutput, 'utf8') !== 'keep original') throw new Error('核验失败覆盖了已有输出。');
   const spatialInputs = [];
-  for (const fixture of ['microservices-spatial', 'document-pipeline-spatial']) {
+  for (const fixture of ['microservices-spatial', 'document-pipeline-spatial', 'document-pipeline-navigation']) {
     const source = join(cwd, `${fixture}.diagram.json`); const output = join(cwd, `${fixture}-3d.html`);
     // Only copy authored input data; generation must use the copied Skill runtime.
     await cp(join(skill, 'examples', `${fixture}.diagram.json`), source);
@@ -43,6 +57,10 @@ try {
   spatialInputs.push({ name: 'old-without-spatial', source: input, output: oldSpatialHtml });
   const spatial2dHtml = join(cwd, '空间数据 二维.html');
   await run('generate spatial input as 2D before npm install', process.execPath, [join(skill, 'scripts/generate.mjs'), spatialInputs[0].source, '--renderer', '2d', '--output', spatial2dHtml]);
+  const childHtml = join(cwd, '解析组件 二维.html');
+  await run('extract child view as standalone 2D before npm install', process.execPath, [join(skill, 'scripts/generate.mjs'), spatialInputs.find(item => item.name === 'document-pipeline-navigation').source, '--view', 'parser-components', '--renderer', '2d', '--output', childHtml]);
+  const childModel = JSON.parse((await readFile(childHtml, 'utf8')).match(/<script id="blueprint-data" type="application\/json">([\s\S]*?)<\/script>/)[1]);
+  if (childModel.id !== 'parser-components' || childModel.navigation || childModel.spatial?.scenarios) throw new Error('子图提取包含其他层级或根演示。');
   for (const format of ['svg', 'png', 'jpg']) {
     const output = join(cwd, `unsupported-3d.${format}`);
     const rejected = await run(`3D ${format} export gives explicit unsupported diagnostic before Playwright install`, process.execPath, [join(skill, 'scripts/export.mjs'), oldSpatialHtml, '--format', format, '--output', output], 2);
@@ -91,6 +109,16 @@ try {
       await page.locator('#demo-step').click(); const stepped = await state();
       assert.equal(stepped.demo.stepId, scenario.steps[0].id); assert.equal(stepped.selectedId, scenario.steps[0].focusId);
       await page.locator('#demo-reset').click(); assert.equal((await state()).demo.index, -1);
+    }
+    if (document.navigation?.views.length) {
+      const entry = document.navigation.views[0];
+      await page.locator('#explore-toggle').click(); await page.locator('#node-select').selectOption(entry.ownerId);
+      await page.locator('#enter-view').click(); assert.equal((await state()).viewId, entry.document.id);
+      await page.locator('#back-view').click(); assert.equal((await state()).viewId, document.id);
+      const crossIndex = document.spatial.scenarios[0].steps.findIndex(step => step.viewId && step.viewId !== document.id);
+      for (let i = 0; i <= crossIndex; i++) await page.locator('#demo-step').click();
+      assert.equal((await state()).viewId, document.spatial.scenarios[0].steps[crossIndex].viewId);
+      await page.locator('#demo-reset').click();
     }
     assert.deepEqual(network, []); assert.deepEqual(errors, []);
     reports.push({ fixture: fixture.name, renderer: 'webgl', objects: initial.objectIds.length, scenarios: document.spatial?.scenarios?.length ?? 0, offlineFileUrl: true, network, errors });

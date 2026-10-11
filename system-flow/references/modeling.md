@@ -17,12 +17,12 @@
 
 ## 必要字段与引用
 
-- 文档：`schemaVersion: "2.0"`、id、title、view、nodes、edges、groups；description、spatial 可选。旧图无需新增 spatial；根图字段继续用于 2D。
+- 文档：`schemaVersion: "2.0"`、id、title、view、nodes、edges、groups；description、spatial、sourceRevision、navigation 可选。旧图无需新增字段；根图字段继续用于 2D。
 - view：kind、direction (`RIGHT|DOWN`)、theme (`light|dark`)；collapsedGroups 为初始折叠组 ID；primaryPath 为按顺序连续的有向边 ID，不指定时不推断主干。
 - node：id、kind、label；可加 summary、details、groupId、evidenceStatus、sources。kind 为 start/end/process/decision/store/external/fork/join。
 - edge：id、source、target、kind、directed；可加 label、details、evidenceStatus、sources。kind 为 control/data/dependency/exception/feedback。
-- group：id、label；可加 parentId、details。根图、内部图的节点和根分组共用全局唯一 ID；根边与全部内部边的 ID 在文档内唯一。根边端点只能引用根节点；内部边端点只能引用同一内部图节点。
-- sources：`[{ "path": "src/service.ts", "line": 12 }]`。path 是可读的仓库相对引用；不会自动打开文件或执行链接。
+- group：id、label；可加 parentId、details。每个视图的根节点、内部节点与分组共用唯一 ID；边 ID 在该视图内唯一。根边端点只能引用本视图根节点；内部边端点只能引用同一内部图节点。
+- sources：`[{ "path": "src/service.ts", "line": 12, "sha256": "<64位摘要>" }]`，line/sha256 可省略。path 是仓库相对引用；HTML 不自动打开文件，CLI 可用 --repo-root 只读核验。修订、dirty 与严格检查见 [来源核验](evidence.md)。
 - evidenceStatus：confirmed 表示有依据，assumed 表示假设，planned 表示规划；缺省 assumed。这不是运行状态，也不能把源码中一个概念当成线上服务。
 
 引用原有图片时，区分“图中有这个概念”与“已有实现”。源码、配置、文档或明确需求可以作为依据。没有实际证据的具体调用、失败策略或新增能力分别标 assumed/planned，并在影响理解的可见说明中解释。
@@ -65,7 +65,7 @@ flow 高亮只遍历流程子图；overview/deployment 遍历所有有向关系�
 
 ## 限额与诊断
 
-根图和全部内部图合计最多 100 节点、300 边；根图最多 20 组且至少一个节点。UTF-8 JSON 文件最多 2 MiB；每个 details 最多 8,000 个 Unicode 字符。根分组最多两层，不能成环或为空；内部节点可引用根图已有 groupId，内部图不另设 groups，也不形成嵌套剖面。超限必须报错，不能静默截断。
+每个视图连同内部剖面合计最多 100 节点、300 边；每视图最多 20 组且至少一个节点。UTF-8 JSON 文件整体最多 2 MiB；每个 details 最多 8,000 个 Unicode 字符。视图内分组最多两层，不能成环或为空；内部节点可引用所属视图已有 groupId，内部图不另设 groups，也不形成嵌套剖面。可选 navigation 最多 20 个内嵌子图、4 层父子跳转；节点 ID 在视图内唯一，跨视图引用必须指定 viewId。超限必须报错，不能静默截断。
 
 固定诊断结构为 `{ code, path, ids, message, severity }`。结构、引用、条件、方向错误阻止生成；不连通或流程不可达警告需要核对并在交付说明。未知字段与版本拒绝读取。
 

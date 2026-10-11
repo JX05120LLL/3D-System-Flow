@@ -5,6 +5,8 @@ export type DiagramNode = DiagramDocument['nodes'][number];
 export type DiagramEdge = DiagramDocument['edges'][number];
 export type DiagramGroup = DiagramDocument['groups'][number];
 export type DiagramView = DiagramDocument['view'];
+export type NavigationView = NonNullable<DiagramDocument['navigation']>['views'][number];
+export type NavigationBridge = NonNullable<NonNullable<DiagramDocument['navigation']>['bridges']>[number];
 export type HighlightDirection = 'upstream' | 'downstream';
 
 export interface Diagnostic {

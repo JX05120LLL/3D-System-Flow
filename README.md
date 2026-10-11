@@ -16,7 +16,7 @@
 
 3D System Flow 是面向**软件架构与运行流程**的可复用本地 Skill。Agent 阅读仓库、设计文档或系统描述，核对模块与关系，并写入 `.diagram.json`；同一份数据可以生成两种阅读方式：
 
-- **3D 沙盘**：在空间中探索系统，展开模块剖面、查看组件职责，播放显式编排的请求演示。
+- **3D 沙盘**：在空间中探索系统，展开模块剖面、逐层进入子图，查看组件职责并播放跨层请求演示。
 - **2D 流程图**：阅读完整条件与分组，审核修订已有对象，并导出 SVG / PNG / JPEG。
 
 每张图保留可继续修改的 JSON 和单文件交互 HTML。`system-flow/` 包含建模规则、示例、脚本和已构建的 2D/3D 运行时；换一份系统数据即可生成新图。HTML 内嵌图数据、样式与脚本，3D 已内嵌 Three.js，阅读不需要账号、服务器或网络。CLI 未指定渲染方式时仍默认生成 **2D**。
@@ -31,14 +31,18 @@ GIF 展示操作过程；交互体验需要按[快速开始](#快速开始)生�
 
 Skill 自带[微服务](system-flow/examples/microservices-spatial.diagram.json)和[文档处理](system-flow/examples/document-pipeline-spatial.diagram.json)两份数据，均可生成 2D 与 3D。内部职责和演示步骤是明确的**教学假设**，使用时需按实际系统核对；位置、体积和播放路径不代表真实部署、容量或实时 trace。
 
+新版另有[文档处理分层示例](system-flow/examples/document-pipeline-navigation.diagram.json)：从总览进入解析组件，再进入切分细节；面包屑返回祖先，职责卡可跨视图跳转，演示自动切换阅读层级。上面的 GIF 展示原有剖面演示，分层体验请生成此新示例。
+
 ## 核心能力
 
 | 能力 | 说明 |
 | --- | --- |
 | 3D 总览 | 本地空间布局、模型和短名牌；旋转、缩放、平移、俯视/立体切换、复位与全屏。 |
 | 模块剖面 | 按数据展开单层内部组件；多个模块可独立展开，组件职责通过点选按需显示。 |
+| 分层导航 | 内嵌独立子图，按节点进入细节、返回父图/祖先/总览；显式桥支持跨视图职责与跳转，节点 ID 按视图区分。 |
 | 关联探索 | 对象列表、聚焦、上下游高亮与隔离；根模块查看根图关系，内部组件查看所属内部图关系。 |
-| 编排演示 | 显式场景与有序步骤；播放/暂停、前后单步、重置和切换场景，自动展开相关剖面并定位焦点。 |
+| 编排演示 | 显式场景与有序步骤；播放/暂停、前后单步、重置和切换场景，自动切换视图、展开剖面并定位焦点。 |
+| 来源核验 | 只读核对全部视图的文件、行号、SHA-256、Git HEAD/dirty；默认警告，严格模式拒绝生成且保留已有 HTML。 |
 | 2D 阅读 | 先测量文字，再用 ELK.js 布局；横向/纵向切换、缩放平移、详情、上下游高亮与两层分组折叠，保留判断条件和异常回路。 |
 | 2D 审核 | 修改已有节点、连接或分组的描述、来源、端点与条件等；校验后重新布局，支持撤销/重做、下载图数据和修订 HTML。 |
 | 离线与导出 | 两种 HTML 均为单文件；2D 静态导出完整展开的 SVG / PNG / JPEG，3D 在 WebGL 不可用时保留对象与职责/步骤文字。 |
@@ -54,27 +58,30 @@ Skill 自带[微服务](system-flow/examples/microservices-spatial.diagram.json)
 | `spatial.interiors` | 为根模块指定 `owner` 和内部 `nodes` / `edges`，描述单层组件及职责；归属由 `owner` 决定。 |
 | `spatial.models` | 为根或内部节点选择形态、颜色与短名牌；完整说明保留在节点 `summary` / `details`。 |
 | `spatial.scenarios` | 显式定义场景与步骤，使用 `route` 指定阅读路径、`focusId` 指定焦点，并写明步骤说明。 |
+| `navigation.views` | 用 parentId/ownerId 关联独立子图；子图可再拥有剖面，父链统一定义在根文档。 |
+| `navigation.bridges` | 两端使用 viewId/nodeId，提供跨视图阅读关联；不参与单图上下游或推导执行顺序。 |
+| `sourceRevision` / `sources[].sha256` | 可选修订、dirty 和文件摘要；配合 --repo-root 检查取证内容漂移。步骤与桥也可保留依据。 |
 
-替换示例的模块、组件、关系和步骤后，运行同一套 validate / generate 入口即可生成自己的系统。没有 `spatial` 的旧图也可生成 3D 根图；没有内部图的模块不补造组件，没有场景时隐藏演示入口。源码、文档和明确需求是依据；使用 `confirmed`、`assumed`、`planned` 区分已证实、假设与规划，并保留 `sources`。步骤必须依据证据或明确教学假设编排，不能由依赖边自动推导执行顺序。完整字段见[建模说明](system-flow/references/modeling.md)和[3D 建模与验收](system-flow/references/spatial.md)。
+替换示例的模块、组件、关系和步骤后，运行同一套 validate / generate 入口即可生成自己的系统。没有 `spatial` 或 `navigation` 的旧图继续生成；没有场景时隐藏演示入口。使用 `confirmed`、`assumed`、`planned` 区分已证实、假设与规划，并保留 `sources`。每个场景是一条前提一致的路径，互斥失败分开编排，不能由依赖边推导运行顺序。完整字段见[建模说明](system-flow/references/modeling.md)、[来源核验](system-flow/references/evidence.md)和[3D 建模与验收](system-flow/references/spatial.md)。
 
 ## 工作流程
 
 ```mermaid
 flowchart TD
     A["代码 / 文档 / 系统描述"] --> B["Agent 核对模块、职责、关系与来源"]
-    B --> C["图数据 JSON：基础图 + 可选 spatial"]
-    C --> D["校验结构、引用、条件与限额"]
+    B --> C["图数据 JSON：基础图 + 可选空间与分层视图"]
+    C --> D["校验结构、导航、条件与限额；核验来源"]
     D --> E["组装 2D 单文件 HTML"]
     D --> F["组装 3D 单文件 HTML"]
     E --> G["浏览器：文字测量、ELK 布局与渲染"]
-    F --> H["浏览器：空间布局、剖面与场景渲染"]
+    F --> H["浏览器：空间布局、分层导航、剖面与跨层演示"]
     G --> I["实际打开检查、交互审核"]
     H --> I
     I -->|"修订并保存 JSON，重新生成"| C
     G --> J["完整展开根图，导出 SVG / PNG / JPEG"]
 ```
 
-两种渲染都先校验图数据。CLI 组装单文件 HTML，浏览器打开后执行布局与渲染；生成成功后仍需实际检查。2D 可下载审核后的 JSON 与 HTML，3D 内容修订后重生成。需要静态图片时，使用同一 JSON 的 **2D HTML** 导出根图；内部组件的静态图需另建二维模型。
+两种渲染都先校验图数据。CLI 组装单文件 HTML，浏览器打开后执行布局与渲染；生成成功后仍需实际检查。2D 可下载审核后的 JSON 与 HTML，3D 内容修订后重生成。静态图片默认导出根图，也可通过 `generate --view <id>` 提取一个内嵌子图为 **2D HTML** 再导出。来源文件匹配仍需人工核对调用语义。
 
 ## 技术栈
 
@@ -89,19 +96,20 @@ flowchart TD
 
 ```text
 system-flow/        可独立安装的 Skill、已构建运行时和导出脚本
-  examples/         含内部组件与编排步骤的微服务、文档处理图数据
-  references/       建模、空间扩展与视觉验收说明
+  examples/         微服务、文档处理及分层导航教学数据
+  references/       建模、来源核验、空间扩展与视觉验收说明
 src/                模型、投影、测量、布局、2D/3D 阅读器与 CLI 源码
 scripts/            构建、示例检查、独立包验证与 ZIP 打包
 images/             README 压缩预览与原始录屏
 tests/              单元测试、浏览器回归与测试输入
+docs/acceptance/    两个真实项目的验收范围、发现与修正
 ```
 
 ## 快速开始
 
 ### 1. 获取完整 Skill
 
-需要 **Node.js 24.x**。从 [Releases](https://github.com/JX05120LLL/3D-System-Flow/releases/latest) 下载并解压 `system-flow-v2.1.0.zip`，或克隆仓库：
+需要 **Node.js 24.x**。可从 [Releases](https://github.com/JX05120LLL/3D-System-Flow/releases/latest) 下载已发布 ZIP，或克隆仓库获取源码中的完整 Skill：
 
 ```bash
 git clone https://github.com/JX05120LLL/3D-System-Flow.git
@@ -112,6 +120,8 @@ cd 3D-System-Flow
 
 生成只需要完整 Skill 目录和 Node.js，无需安装开发依赖或 Three.js。
 
+来源核验与分层导航需要 **2.2.0** 或以上运行时。可从 [v2.2.0 发布页](https://github.com/JX05120LLL/3D-System-Flow/releases/tag/v2.2.0)下载 `system-flow-v2.2.0.zip` 与 `SHA256SUMS.txt`；安装旧发布包时请核对版本。
+
 ### 2. 生成并探索示例
 
 ```bash
@@ -119,6 +129,8 @@ node system-flow/scripts/validate.mjs system-flow/examples/microservices-spatial
 node system-flow/scripts/generate.mjs system-flow/examples/microservices-spatial.diagram.json --renderer 3d --output output/microservices-3d.html
 node system-flow/scripts/generate.mjs system-flow/examples/microservices-spatial.diagram.json --renderer 2d --output output/microservices-2d.html
 node system-flow/scripts/generate.mjs system-flow/examples/document-pipeline-spatial.diagram.json --renderer 3d --output output/document-pipeline-3d.html
+node system-flow/scripts/generate.mjs system-flow/examples/document-pipeline-navigation.diagram.json --renderer 3d --output output/document-navigation-3d.html
+node system-flow/scripts/generate.mjs system-flow/examples/document-pipeline-navigation.diagram.json --view parser-components --renderer 2d --output output/parser-components-2d.html
 ```
 
 直接用浏览器打开 `output/microservices-3d.html`，无需启动服务；断网后也可阅读。先查看总览，点击订单、库存或支付服务查看内部组件，再播放下单演示。鼠标拖动旋转、滚轮缩放、右键平移，顶部可切换俯视/立体、复位和全屏。
@@ -126,6 +138,17 @@ node system-flow/scripts/generate.mjs system-flow/examples/document-pipeline-spa
 在焦点不处于输入、按钮或选择控件时，`Space` 播放/暂停，`←` / `→` 前后单步；`Esc` 先关闭对象列表，再返回总览。手动选中对象或查看关联会暂停演示，页面进入后台也会暂停。3D 需要 WebGL；不可用时保留对象列表、职责与步骤文字，空间控件禁用。
 
 `--renderer 2d|3d` 默认为 `2d`。文件默认不覆盖，重新生成时显式加 `--overwrite`；参数说明使用 `node system-flow/scripts/generate.mjs --help`。
+
+打开 `output/document-navigation-3d.html`，选择文本解析器后“进入细节”，再进入生成片段的子图；面包屑可返回。点选职责卡中的跨视图关联会跳转并暂停演示；播放或前后单步按步骤自动切图，重置回总览。
+
+### 对自己的仓库核验来源
+
+```bash
+node system-flow/scripts/validate.mjs output/system.diagram.json --repo-root "<仓库根目录>" --strict-sources
+node system-flow/scripts/generate.mjs output/system.diagram.json --renderer 3d --output output/system-3d.html --repo-root "<仓库根目录>" --strict-sources
+```
+
+先由 Agent 阅读真实实现并填写 `sources`、可选 `sourceRevision` 与 SHA-256。不加 `--strict-sources` 时证据问题只给警告，须另看 `checks.sources.passed`；`valid:true` 不代表来源通过。核验始终覆盖整个图集，包括 --view 未展示的子图。见[来源核验](system-flow/references/evidence.md)。
 
 ### 3. 按需导出二维静态图
 
@@ -143,7 +166,7 @@ node system-flow/scripts/export.mjs output/microservices-2d.html --format jpg --
 
 ## 安装 Skill
 
-1. 从 [GitHub Releases](https://github.com/JX05120LLL/3D-System-Flow/releases/latest) 下载 `system-flow-v2.1.0.zip` 与 `SHA256SUMS.txt`，或直接使用仓库中的 [`system-flow/`](system-flow/) 目录。
+1. 从 [v2.2.0 发布页](https://github.com/JX05120LLL/3D-System-Flow/releases/tag/v2.2.0)下载 `system-flow-v2.2.0.zip` 与 `SHA256SUMS.txt`，核对 ZIP 的 SHA-256；或直接使用仓库中的 [`system-flow/`](system-flow/) 目录。新增能力使用 2.2.0 或以上运行时。
 2. 解压后将完整的 `system-flow/` 复制到编程工具的 Skills 目录，保持目录名为 `system-flow`。以 Codex 为例，个人安装路径为 `~/.agents/skills/system-flow/`，项目安装路径为 `<项目>/.agents/skills/system-flow/`，见 [OpenAI 官方安装说明](https://learn.chatgpt.com/docs/build-skills)。其他支持 `SKILL.md` 的工具按各自配置选择目录。
 3. 保留整个目录，包括 `SKILL.md`、`LICENSE`、第三方声明、`agents/`、`assets/`、`references/`、`examples/`、`scripts/`、`package.json` 与锁文件。安装 Node.js 24.x 后即可生成；自动静态导出需在实际安装的 Skill 目录执行 `npm ci` 并安装 Chromium。
 
@@ -154,8 +177,10 @@ node system-flow/scripts/export.mjs output/microservices-2d.html --format jpg --
 ```text
 使用 $system-flow，为这个仓库生成 3D 架构沙盘。
 核对主要模块、内部组件职责和调用依据，提供可展开的模块剖面，
-为关键请求显式编排可暂停、前后单步与重置的演示。
-区分已证实、假设和规划，保留来源；交付 .diagram.json 与离线 3D HTML。
+按职责提供分层子图、面包屑与显式跨视图关联，
+为关键请求编排可暂停、前后单步与重置的跨层演示；互斥失败单独成场景。
+区分已证实、假设和规划，记录 HEAD/dirty/引用文件摘要并严格核验来源；
+交付 .diagram.json 与离线 3D HTML。
 实际检查选择、职责、上下游、剖面与演示联动，并说明未验证项。
 ```
 
@@ -188,18 +213,21 @@ npm run test:package
 npm run package:skill
 ```
 
-`examples:check` 检查二维测试示例的生成/导出和两份三维示例的离线交互；`test:package` 从独立复制的 Skill 目录检查 2D 生成/导出与 3D 离线运行。`package:skill` 输出 `artifacts/release/system-flow-v2.1.0.zip` 与 `archive.json`，后者记录归档 SHA-256 和逐文件校验；发布页面的 `SHA256SUMS.txt` 是另行准备的校验文件。ZIP 不含本地依赖、浏览器缓存或测试产物。2D 静态图和 3D 交互应分别实际打开验收。
+`examples:check` 检查二维生成/导出，以及三维剖面与分层示例的离线交互；`test:package` 从独立复制的 Skill 目录检查来源核验、子图提取、2D 生成/导出与 3D 导航。`package:skill` 输出 `artifacts/release/system-flow-v2.2.0.zip` 与 `archive.json`，后者记录归档 SHA-256 和逐文件校验。ZIP 不含本地依赖、浏览器缓存、真实项目取证数据或测试产物；本地打包不表示已发布。
 
 ## 更多文档与限制
 
 - [Skill 使用说明](system-flow/SKILL.md)：生成、交互审核、静态导出与交付约束。
 - [微服务图数据](system-flow/examples/microservices-spatial.diagram.json)：模块、内部组件与下单步骤教学示例。
 - [文档处理图数据](system-flow/examples/document-pipeline-spatial.diagram.json)：第二种系统的空间建模教学示例。
+- [分层导航图数据](system-flow/examples/document-pipeline-navigation.diagram.json)：总览、解析、切分和索引视图与跨层步骤。
+- [真实项目验收](docs/acceptance/2026-10-11-real-projects.md)：CiteRAG/Iteroom 静态事实与离线阅读器验收，包含失败、修正与范围。
 - [建模说明](system-flow/references/modeling.md)：字段、条件、分组与事实状态。
-- [3D 建模与验收](system-flow/references/spatial.md)：单层内部组件、形态、步骤、离线与降级检查。
+- [来源核验](system-flow/references/evidence.md)：修订、文件摘要、严格检查与人工语义复核。
+- [3D 建模与验收](system-flow/references/spatial.md)：单层剖面、分层视图、跨层步骤、离线与降级检查。
 - [JSON Schema](system-flow/references/diagram-schema.json)：完整字段、引用范围与校验约束。
 
-当前根图和全部内部图合计最多 **100 节点 / 300 边**，输入最多 **2 MiB**；根分组最多 20 个、两层，内部剖面只支持一层，复杂系统应按范围拆图。自动布局仍需人工检查文字、方向、遮挡与连线。
+每个视图连同内部剖面最多 **100 节点 / 300 边**，整个输入最多 **2 MiB**；每视图分组最多 20 个、两层。剖面仍为单层，深入内容使用最多 **20 个子图 / 4 层父子跳转**。子图各自布局，桥通过职责跳转；自动布局仍需人工检查文字、方向、遮挡与连线。
 
 场景用于解释系统，不执行请求、不修改业务数据，也不表示实时监控。图数据与完整职责会嵌入 HTML，分享前应核对内容与来源。旧 v1 HTML / SVG 可使用兼容入口导出位图，但不能无损转换为可编辑图数据；详细限制见 [SKILL.md](system-flow/SKILL.md)。
 

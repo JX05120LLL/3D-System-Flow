@@ -10,6 +10,7 @@ const examples = [
   { name: 'traditional-microservices-order-flow', source: 'tests/fixtures/traditional-microservices-order-flow.diagram.json', renderer: '2d' },
   { name: 'microservices-spatial', source: 'system-flow/examples/microservices-spatial.diagram.json', renderer: '3d' },
   { name: 'document-pipeline-spatial', source: 'system-flow/examples/document-pipeline-spatial.diagram.json', renderer: '3d' },
+  { name: 'document-pipeline-navigation', source: 'system-flow/examples/document-pipeline-navigation.diagram.json', renderer: '3d' },
 ];
 const stage = 'artifacts/example-build';
 const reportPath = check ? 'artifacts/examples-check-report.json' : 'artifacts/examples-generate-report.json';
@@ -54,6 +55,18 @@ try {
         assert(stepped.demo.stepId === scenarios[0].steps[0].id && stepped.selectedId === scenarios[0].steps[0].focusId, `${name}: first scenario step differs`);
         await page.locator('#demo-reset').click();
         assert((await page.evaluate(() => window.__sandboxPrototype.state())).demo.index === -1, `${name}: 3D scenario reset failed`);
+      }
+      if (model.navigation?.views.length) {
+        const entry = model.navigation.views[0];
+        await page.locator('#explore-toggle').click(); await page.locator('#node-select').selectOption(entry.ownerId);
+        await page.locator('#enter-view').click();
+        assert((await page.evaluate(() => window.__sandboxPrototype.state())).viewId === entry.document.id, `${name}: child view entry failed`);
+        await page.locator('#back-view').click();
+        assert((await page.evaluate(() => window.__sandboxPrototype.state())).viewId === model.id, `${name}: parent return failed`);
+        const crossStepIndex = scenarios[0]?.steps.findIndex(step => step.viewId && step.viewId !== model.id) ?? -1;
+        for (let i = 0; i <= crossStepIndex; i++) await page.locator('#demo-step').click();
+        if (crossStepIndex >= 0) assert((await page.evaluate(() => window.__sandboxPrototype.state())).viewId === scenarios[0].steps[crossStepIndex].viewId, `${name}: cross-view playback failed`);
+        await page.locator('#demo-reset').click();
       }
       await page.setViewportSize({ width: 375, height: 812 });
       assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${name}: narrow viewport overflows`);

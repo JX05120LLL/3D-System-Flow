@@ -1,11 +1,32 @@
 import type { DiagramDocument } from '../model/types.ts';
 import { validateDocument } from '../model/validate.ts';
+import { buildNavigation } from '../model/navigation.ts';
 import type { ModuleDocuments, SpatialScene } from './contracts.ts';
 
 /** Normalize only authored components and steps; root edges remain in the root graph. */
-export function normalizeScene(document: DiagramDocument): SpatialScene {
+export function normalizeScene(document: DiagramDocument, viewId = document.id): SpatialScene {
   const result = validateDocument(document);
   if (!result.valid) throw new Error(result.diagnostics.filter(d => d.severity === 'error').map(d => `${d.code} ${d.path}: ${d.message}`).join('\n'));
+  const navigation = buildNavigation(document);
+  const view = navigation.getView(viewId);
+  if (!view) throw new Error(`未知视图：${viewId}`);
+  const scene = normalizeView(view);
+  const ownersByView = new Map([...navigation.views].map(([id, item]) => [id, normalizeView(item)]));
+  scene.scenarios = (document.spatial?.scenarios ?? []).map(scenario => ({
+    id: scenario.id,
+    label: scenario.label,
+    steps: scenario.steps.map(step => ({
+      ...step,
+      viewId: step.viewId ?? document.id,
+      route: [...step.route],
+      durationMs: step.durationMs ?? 2200,
+      openModules: [...new Set([...step.route, step.focusId].map(id => ownerOf(ownersByView.get(step.viewId ?? document.id)!, id)).filter((id): id is string => id !== null))],
+    })),
+  }));
+  return scene;
+}
+
+function normalizeView(document: DiagramDocument): SpatialScene {
   const documents: ModuleDocuments = Object.create(null) as ModuleDocuments;
   const owners = new Map<string, string>();
   const moduleIds: string[] = [];
@@ -38,16 +59,6 @@ export function normalizeScene(document: DiagramDocument): SpatialScene {
     models: new Map((document.spatial?.models ?? []).map(({ nodeId, ...model }) => [nodeId, model])),
     scenarios: [],
   };
-  scene.scenarios = (document.spatial?.scenarios ?? []).map(scenario => ({
-    id: scenario.id,
-    label: scenario.label,
-    steps: scenario.steps.map(step => ({
-      ...step,
-      route: [...step.route],
-      durationMs: step.durationMs ?? 2200,
-      openModules: [...new Set([...step.route, step.focusId].map(id => ownerOf(scene, id)).filter((id): id is string => id !== null))],
-    })),
-  }));
   return scene;
 }
 

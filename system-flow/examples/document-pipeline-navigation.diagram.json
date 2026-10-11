@@ -1,0 +1,516 @@
+{
+  "schemaVersion": "2.0",
+  "id": "document-pipeline-navigation",
+  "title": "文档处理 · 分层探索",
+  "description": "教学假设：总览、解析组件、切分细节与索引组件均为阅读视图，非真实业务执行或部署。",
+  "view": {
+    "kind": "overview",
+    "direction": "RIGHT",
+    "theme": "light"
+  },
+  "groups": [
+    {
+      "id": "processing-domain",
+      "label": "内容处理"
+    },
+    {
+      "id": "retrieval-domain",
+      "label": "检索与存储"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "document-input",
+      "kind": "start",
+      "label": "文档输入",
+      "details": "提供待处理文档的逻辑入口，不指定文件类型或上传接口。",
+      "evidenceStatus": "assumed"
+    },
+    {
+      "id": "text-parser",
+      "kind": "process",
+      "label": "文本解析器",
+      "details": "读取并整理文本，按显式教学步骤交付可索引片段。",
+      "evidenceStatus": "assumed",
+      "groupId": "processing-domain"
+    },
+    {
+      "id": "vector-indexer",
+      "kind": "process",
+      "label": "向量索引器",
+      "details": "把文本片段转为逻辑表示并写入存储；模型与重试策略未指定。",
+      "evidenceStatus": "assumed",
+      "groupId": "processing-domain"
+    },
+    {
+      "id": "vector-store",
+      "kind": "store",
+      "label": "索引存储",
+      "details": "承载逻辑向量索引，不指定数据库产品或持久化协议。",
+      "evidenceStatus": "assumed",
+      "groupId": "retrieval-domain"
+    },
+    {
+      "id": "search-api",
+      "kind": "external",
+      "label": "检索入口",
+      "details": "使用已建立的索引，检索策略和接口尚未指定。",
+      "evidenceStatus": "assumed",
+      "groupId": "retrieval-domain"
+    }
+  ],
+  "edges": [
+    {
+      "id": "input-to-parser",
+      "source": "document-input",
+      "target": "text-parser",
+      "kind": "control",
+      "directed": true,
+      "label": "交付文档",
+      "evidenceStatus": "assumed"
+    },
+    {
+      "id": "parser-to-indexer",
+      "source": "text-parser",
+      "target": "vector-indexer",
+      "kind": "data",
+      "directed": true,
+      "label": "文本片段",
+      "evidenceStatus": "assumed"
+    },
+    {
+      "id": "indexer-to-store",
+      "source": "vector-indexer",
+      "target": "vector-store",
+      "kind": "data",
+      "directed": true,
+      "label": "保存索引",
+      "evidenceStatus": "assumed"
+    },
+    {
+      "id": "search-to-store",
+      "source": "search-api",
+      "target": "vector-store",
+      "kind": "dependency",
+      "directed": true,
+      "label": "读取索引",
+      "evidenceStatus": "assumed"
+    }
+  ],
+  "spatial": {
+    "interiors": [
+      {
+        "owner": "text-parser",
+        "nodes": [
+          {
+            "id": "read-document",
+            "kind": "start",
+            "label": "读取文档",
+            "details": "获取本次教学输入的文本。",
+            "evidenceStatus": "assumed"
+          },
+          {
+            "id": "normalize-text",
+            "kind": "process",
+            "label": "整理文本",
+            "details": "代表文本整理职责，不指定清洗规则。",
+            "evidenceStatus": "assumed"
+          },
+          {
+            "id": "split-chunks",
+            "kind": "end",
+            "label": "生成片段",
+            "details": "把文本拆为可索引片段，不指定长度或重叠策略。",
+            "evidenceStatus": "assumed"
+          }
+        ],
+        "edges": [
+          {
+            "id": "read-to-normalize",
+            "source": "read-document",
+            "target": "normalize-text",
+            "kind": "control",
+            "directed": true,
+            "label": "文本内容",
+            "evidenceStatus": "assumed"
+          },
+          {
+            "id": "normalize-to-split",
+            "source": "normalize-text",
+            "target": "split-chunks",
+            "kind": "control",
+            "directed": true,
+            "label": "整理结果",
+            "evidenceStatus": "assumed"
+          }
+        ]
+      },
+      {
+        "owner": "vector-indexer",
+        "nodes": [
+          {
+            "id": "encode-chunks",
+            "kind": "start",
+            "label": "生成表示",
+            "details": "代表逻辑向量化职责，不调用真实模型。",
+            "evidenceStatus": "assumed"
+          },
+          {
+            "id": "persist-index",
+            "kind": "end",
+            "label": "写入索引",
+            "details": "关联外层索引存储，不指定事务或幂等策略。",
+            "evidenceStatus": "assumed"
+          }
+        ],
+        "edges": [
+          {
+            "id": "encode-to-persist",
+            "source": "encode-chunks",
+            "target": "persist-index",
+            "kind": "data",
+            "directed": true,
+            "label": "片段与表示",
+            "evidenceStatus": "assumed"
+          }
+        ]
+      }
+    ],
+    "models": [
+      {
+        "nodeId": "document-input",
+        "shape": "client",
+        "color": "#69e1dd",
+        "shortLabel": "文档输入"
+      },
+      {
+        "nodeId": "text-parser",
+        "shape": "shell",
+        "color": "#559eff",
+        "shortLabel": "文本解析"
+      },
+      {
+        "nodeId": "vector-indexer",
+        "shape": "shell",
+        "color": "#ac91ff",
+        "shortLabel": "向量索引"
+      },
+      {
+        "nodeId": "vector-store",
+        "shape": "database",
+        "color": "#4de1b3",
+        "shortLabel": "索引存储"
+      },
+      {
+        "nodeId": "search-api",
+        "shape": "external",
+        "color": "#edbf78",
+        "shortLabel": "检索入口"
+      },
+      {
+        "nodeId": "read-document",
+        "shape": "gateway"
+      },
+      {
+        "nodeId": "normalize-text",
+        "shape": "adjust"
+      },
+      {
+        "nodeId": "split-chunks",
+        "shape": "result"
+      },
+      {
+        "nodeId": "encode-chunks",
+        "shape": "channel"
+      },
+      {
+        "nodeId": "persist-index",
+        "shape": "ledger"
+      }
+    ],
+    "scenarios": [
+      {
+        "id": "build-index",
+        "label": "跨层建索引示意",
+        "steps": [
+          {
+            "id": "accept",
+            "title": "接入文档",
+            "description": "教学假设：接入文档；本演示不发出真实业务请求。",
+            "route": [
+              "document-input",
+              "text-parser"
+            ],
+            "focusId": "document-input",
+            "tone": "request",
+            "evidenceStatus": "assumed",
+            "durationMs": 2600
+          },
+          {
+            "id": "parse",
+            "title": "读取并整理",
+            "description": "教学假设：读取并整理；本演示不发出真实业务请求。",
+            "viewId": "parser-components",
+            "route": [
+              "read-document",
+              "normalize-text",
+              "split-chunks"
+            ],
+            "focusId": "split-chunks",
+            "tone": "data",
+            "evidenceStatus": "assumed",
+            "durationMs": 2600
+          },
+          {
+            "id": "split",
+            "title": "进入切分细节",
+            "description": "教学假设：进入切分细节；本演示不发出真实业务请求。",
+            "viewId": "chunk-components",
+            "route": [
+              "choose-boundaries",
+              "emit-chunks"
+            ],
+            "focusId": "choose-boundaries",
+            "tone": "data",
+            "evidenceStatus": "assumed",
+            "durationMs": 2600
+          },
+          {
+            "id": "encode",
+            "title": "生成片段表示",
+            "description": "教学假设：生成片段表示；本演示不发出真实业务请求。",
+            "viewId": "index-components",
+            "route": [
+              "encode-chunks"
+            ],
+            "focusId": "encode-chunks",
+            "tone": "request",
+            "evidenceStatus": "assumed",
+            "durationMs": 2600
+          },
+          {
+            "id": "save",
+            "title": "保存逻辑索引",
+            "description": "教学假设：保存逻辑索引；本演示不发出真实业务请求。",
+            "viewId": "index-components",
+            "route": [
+              "encode-chunks",
+              "persist-index"
+            ],
+            "focusId": "persist-index",
+            "tone": "data",
+            "evidenceStatus": "assumed",
+            "durationMs": 2600
+          },
+          {
+            "id": "ready",
+            "title": "返回总览准备检索",
+            "description": "教学假设：返回总览准备检索；本演示不发出真实业务请求。",
+            "route": [
+              "vector-store",
+              "search-api"
+            ],
+            "focusId": "search-api",
+            "tone": "success",
+            "evidenceStatus": "assumed",
+            "durationMs": 2600
+          }
+        ]
+      }
+    ]
+  },
+  "navigation": {
+    "views": [
+      {
+        "parentId": "document-pipeline-navigation",
+        "ownerId": "text-parser",
+        "document": {
+          "schemaVersion": "2.0",
+          "id": "parser-components",
+          "title": "解析组件",
+          "description": "教学假设：按职责细分的阅读视图。",
+          "view": {
+            "kind": "overview",
+            "direction": "RIGHT",
+            "theme": "light"
+          },
+          "nodes": [
+            {
+              "id": "read-document",
+              "kind": "start",
+              "label": "读取文档",
+              "details": "获取本次教学输入的文本。",
+              "evidenceStatus": "assumed"
+            },
+            {
+              "id": "normalize-text",
+              "kind": "process",
+              "label": "整理文本",
+              "details": "代表文本整理职责，不指定清洗规则。",
+              "evidenceStatus": "assumed"
+            },
+            {
+              "id": "split-chunks",
+              "kind": "end",
+              "label": "生成片段",
+              "details": "把文本拆为可索引片段，不指定长度或重叠策略。",
+              "evidenceStatus": "assumed"
+            }
+          ],
+          "edges": [
+            {
+              "id": "read-to-normalize",
+              "source": "read-document",
+              "target": "normalize-text",
+              "kind": "control",
+              "directed": true,
+              "label": "文本内容",
+              "evidenceStatus": "assumed"
+            },
+            {
+              "id": "normalize-to-split",
+              "source": "normalize-text",
+              "target": "split-chunks",
+              "kind": "control",
+              "directed": true,
+              "label": "整理结果",
+              "evidenceStatus": "assumed"
+            }
+          ],
+          "groups": [],
+          "spatial": {
+            "models": [
+              {
+                "nodeId": "read-document",
+                "shape": "gateway"
+              },
+              {
+                "nodeId": "normalize-text",
+                "shape": "adjust"
+              },
+              {
+                "nodeId": "split-chunks",
+                "shape": "result"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "parentId": "parser-components",
+        "ownerId": "split-chunks",
+        "document": {
+          "schemaVersion": "2.0",
+          "id": "chunk-components",
+          "title": "切分细节",
+          "view": {
+            "kind": "flow",
+            "direction": "RIGHT",
+            "theme": "light"
+          },
+          "groups": [],
+          "nodes": [
+            {
+              "id": "choose-boundaries",
+              "kind": "process",
+              "label": "确定边界",
+              "summary": "教学假设：选择阅读单位",
+              "details": "教学假设：按语义边界组织片段，不指定真实算法或片段大小。",
+              "evidenceStatus": "assumed"
+            },
+            {
+              "id": "emit-chunks",
+              "kind": "end",
+              "label": "输出片段",
+              "summary": "教学假设：交给索引职责",
+              "evidenceStatus": "assumed"
+            }
+          ],
+          "edges": [
+            {
+              "id": "emit",
+              "source": "choose-boundaries",
+              "target": "emit-chunks",
+              "kind": "control",
+              "directed": true,
+              "evidenceStatus": "assumed"
+            }
+          ]
+        }
+      },
+      {
+        "parentId": "document-pipeline-navigation",
+        "ownerId": "vector-indexer",
+        "document": {
+          "schemaVersion": "2.0",
+          "id": "index-components",
+          "title": "索引组件",
+          "description": "教学假设：按职责细分的阅读视图。",
+          "view": {
+            "kind": "overview",
+            "direction": "RIGHT",
+            "theme": "light"
+          },
+          "nodes": [
+            {
+              "id": "encode-chunks",
+              "kind": "start",
+              "label": "生成表示",
+              "details": "代表逻辑向量化职责，不调用真实模型。",
+              "evidenceStatus": "assumed"
+            },
+            {
+              "id": "persist-index",
+              "kind": "end",
+              "label": "写入索引",
+              "details": "关联外层索引存储，不指定事务或幂等策略。",
+              "evidenceStatus": "assumed"
+            }
+          ],
+          "edges": [
+            {
+              "id": "encode-to-persist",
+              "source": "encode-chunks",
+              "target": "persist-index",
+              "kind": "data",
+              "directed": true,
+              "label": "片段与表示",
+              "evidenceStatus": "assumed"
+            }
+          ],
+          "groups": [],
+          "spatial": {
+            "models": [
+              {
+                "nodeId": "encode-chunks",
+                "shape": "channel"
+              },
+              {
+                "nodeId": "persist-index",
+                "shape": "ledger"
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "bridges": [
+      {
+        "id": "chunks-to-index",
+        "source": {
+          "viewId": "parser-components",
+          "nodeId": "split-chunks"
+        },
+        "target": {
+          "viewId": "index-components",
+          "nodeId": "encode-chunks"
+        },
+        "kind": "data",
+        "directed": true,
+        "label": "片段交给表示职责",
+        "details": "教学假设：显式跨视图阅读关联，不能从空间位置推导执行时机。",
+        "evidenceStatus": "assumed"
+      }
+    ]
+  }
+}

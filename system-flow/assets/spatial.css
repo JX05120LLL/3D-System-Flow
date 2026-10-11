@@ -57,6 +57,16 @@ html[data-renderer=unavailable] .context-card{left:50%;top:50%;transform:transla
 .node-meta span{padding:2px 5px;border-radius:3px;background:rgba(187,211,229,.04)}
 .quick-links{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}
 .quick-links button{background:rgba(187,211,229,.05);font-size:11px;min-height:40px;padding:6px 8px}
+.view-breadcrumbs{position:fixed;z-index:6;top:74px;left:max(22px,env(safe-area-inset-left));display:flex;flex-wrap:wrap;gap:3px;max-width:calc(100vw - 44px);max-height:122px;overflow:auto;padding:3px;border-radius:var(--r-panel);background:rgba(13,28,40,.93);scrollbar-width:thin}
+.view-breadcrumbs button{min-width:0;max-width:100%;white-space:normal;overflow-wrap:anywhere;text-align:left;font-size:11px}
+.view-breadcrumbs button+button::before{content:"›";color:var(--quiet);padding-right:3px}
+.view-breadcrumbs button[aria-current=page]{color:var(--accent);opacity:1}
+.enter-view{margin-top:12px;width:100%;background:#293e4d;color:var(--accent);white-space:normal}
+.bridge-links{margin-top:12px;padding-top:12px;border-top:1px solid var(--line);font-size:11px;line-height:1.85;overflow-wrap:anywhere}
+.bridge-links p{white-space:pre-line;color:#aebfcd}
+.bridge-links>div+div{margin-top:14px}
+.bridge-links button{max-width:100%;margin-top:7px;background:#293e4d;white-space:normal;text-align:left;overflow-wrap:anywhere}
+@media(max-width:700px){.view-breadcrumbs{top:65px;left:14px;max-width:calc(100vw - 28px);max-height:104px}}
 #hover-hint{position:absolute;z-index:4;max-width:230px;padding:6px 9px;border-radius:var(--r-button);font-size:10px;line-height:1.7;background:rgba(11,26,38,.95);color:#c5d7e3;pointer-events:none}
 #fallback,.world-fallback{position:absolute;z-index:4;top:46%;left:50%;transform:translate(-50%,-50%);width:min(310px,calc(100vw - 40px));padding:22px;background:rgba(15,32,45,.96);border-radius:var(--r-panel);color:var(--text);line-height:1.8;font-size:12px;text-align:center}
 #fallback>svg{width:30px;height:34px;margin-bottom:9px;fill:none;stroke:var(--accent);stroke-width:1.1}
@@ -100,5 +110,7 @@ html[data-renderer=unavailable] .context-card{left:50%;top:50%;transform:transla
 @media(hover:hover){button:hover:not(:disabled){background:rgba(187,211,229,.1);color:#e5edf3}.playback-controls .play-button:hover:not(:disabled){background:#efcb8e;color:var(--accent-ink)}.node-label:hover,.world-label:hover,.internal-label:hover{background:#243d50;color:#e9f2f8}}
 @media(max-width:700px){.scene-hud{top:max(12px,env(safe-area-inset-top));left:max(14px,env(safe-area-inset-left));right:max(14px,env(safe-area-inset-right));gap:8px}.brand>span{display:none}.scene-tools{gap:1px;padding:2px}.scene-status{left:max(16px,env(safe-area-inset-left));bottom:max(91px,calc(env(safe-area-inset-bottom) + 72px));gap:8px;font-size:9px}.teaching-badge{padding-left:8px}.explorer{right:max(14px,env(safe-area-inset-right));top:65px;width:min(268px,calc(100vw - 28px))}.demo-dock{max-width:calc(100vw - 24px);bottom:max(14px,env(safe-area-inset-bottom));gap:8px;padding:6px 10px 10px 8px}.scenario-field{gap:3px}.scenario-field select{width:99px;font-size:10px;padding-right:8px}.scenario-field>svg{display:none}.playback-controls{gap:1px;padding-left:7px}.demo-state{min-width:40px;font-size:9px;gap:3px}#demo-counter{font-size:9px}.context-card{width:270px;max-height:calc(100dvh - 165px)}.world-label,.internal-label{font-size:9px;padding:3px 5px}.world-label strong,.internal-label strong{font-size:9px}}
 @media(max-width:390px){.scene-hud{left:max(10px,env(safe-area-inset-left));right:max(10px,env(safe-area-inset-right))}.brand>svg{width:22px;height:22px}.scene-tools{gap:0}.scene-tools .icon-button{width:40px;min-width:40px}.view-controls{gap:0}.demo-dock{gap:4px;max-width:calc(100vw - 20px);padding:6px 8px 10px 7px}.scenario-field select{width:74px;padding-left:2px;font-size:10px}.playback-controls{padding-left:4px;gap:0}.playback-controls .icon-button{width:40px;min-width:40px}.demo-state{min-width:36px;margin-left:2px}.context-card{width:266px}.scene-status{left:12px;font-size:9px}}
+/* Mobile world placement reserves 142px below the card; also reserve the measured breadcrumb above it. */
+@media(max-width:599px){html[data-navigation=true] .context-card{max-height:calc(100dvh - var(--navigation-clearance,72px) - 142px)}html[data-navigation=true][data-renderer=unavailable] .context-card{top:var(--navigation-clearance,72px);transform:translateX(-50%)}}
 @media(max-height:450px) and (min-width:600px){.scene-hud{top:9px}.scene-status{bottom:14px}.demo-dock{bottom:10px}.context-card{max-height:calc(100dvh - 110px)}.explorer{top:58px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}button:active:not(:disabled){scale:1}}

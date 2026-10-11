@@ -9,6 +9,8 @@ export type DemoStatus = 'idle' | 'playing' | 'paused' | 'complete';
 /** Explicit teaching choreography; never inferred from dependency edges. */
 export interface DemoStep {
   id: string;
+  /** Normalized scenes set this explicitly; omitted only by legacy callers. */
+  viewId?: string;
   title: string;
   description: string;
   route: readonly string[];

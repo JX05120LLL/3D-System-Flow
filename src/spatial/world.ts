@@ -890,7 +890,7 @@ export function createWorld(stage: HTMLElement, spatialScene: SpatialScene, onSe
       for (const geometry of allGeometries) geometry.dispose();
       for (const material of allMaterials) material.dispose();
       for (const texture of allTextures) texture.dispose();
-      keyLight.shadow.map?.dispose(); renderer.dispose(); renderer.domElement.remove();
+      keyLight.shadow.map?.dispose(); renderer.dispose(); renderer.forceContextLoss(); renderer.domElement.remove();
       for (const label of createdLabels) label.remove(); if (!existingLabels) labels.remove();
       createdLabels.length = 0; pointers.clear(); pointerStart = null;
       demoStep = null; relationFilter = undefined;
