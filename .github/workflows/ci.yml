@@ -1,4 +1,4 @@
-name: Verify System Flow
+name: Verify 3D System Flow
 
 on:
   pull_request:

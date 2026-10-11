@@ -1,6 +1,6 @@
 <div align="center">
 
-# System Flow
+# 3D System Flow
 
 **把软件架构变成可探索的 3D 沙盘，以及可审核的 2D 流程图。**
 
@@ -8,13 +8,13 @@
 
 ![Node.js 24](https://img.shields.io/badge/Node.js-24-339933?logo=nodedotjs&logoColor=white) ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white) ![Three.js](https://img.shields.io/badge/3D-Three.js-000000?logo=threedotjs&logoColor=white) ![ELK.js](https://img.shields.io/badge/2D-ELK.js-6554C0) ![Playwright](https://img.shields.io/badge/Export-Playwright-45BA4B?logo=playwright&logoColor=white)
 
-[效果预览](#效果预览) · [核心能力](#核心能力) · [快速开始](#快速开始) · [安装 Skill](#安装-skill) · [下载 Skill ZIP](https://github.com/JX05120LLL/System-Flow/releases/latest)
+[效果预览](#效果预览) · [核心能力](#核心能力) · [快速开始](#快速开始) · [安装 Skill](#安装-skill) · [下载 Skill ZIP](https://github.com/JX05120LLL/3D-System-Flow/releases/latest)
 
 </div>
 
 ## 项目简介
 
-System Flow 是面向**软件架构与运行流程**的可复用本地 Skill。Agent 阅读仓库、设计文档或系统描述，核对模块与关系，并写入 `.diagram.json`；同一份数据可以生成两种阅读方式：
+3D System Flow 是面向**软件架构与运行流程**的可复用本地 Skill。Agent 阅读仓库、设计文档或系统描述，核对模块与关系，并写入 `.diagram.json`；同一份数据可以生成两种阅读方式：
 
 - **3D 沙盘**：在空间中探索系统，展开模块剖面、查看组件职责，播放显式编排的请求演示。
 - **2D 流程图**：阅读完整条件与分组，审核修订已有对象，并导出 SVG / PNG / JPEG。
@@ -25,7 +25,7 @@ System Flow 是面向**软件架构与运行流程**的可复用本地 Skill。A
 
 下面是微服务示例的压缩录屏预览：从全部模块的沙盘总览进入订单、库存和支付服务内部，再随下单步骤联动查看组件。点击图片可单独播放 GIF；[高清原始录屏](images/示例.gif)保留完整画面。
 
-[![System Flow 三维微服务沙盘、订单库存支付剖面与下单步骤演示](images/system-flow-demo.gif)](images/system-flow-demo.gif)
+[![3D System Flow 三维微服务沙盘、订单库存支付剖面与下单步骤演示](images/system-flow-demo.gif)](images/system-flow-demo.gif)
 
 GIF 展示操作过程；交互体验需要按[快速开始](#快速开始)生成并打开 HTML。可旋转、缩放、平移，切换俯视/立体并复位视角；点选模型或对象列表后展开剖面、查看职责、聚焦和高亮上下游。演示支持播放/暂停、前后单步与重置，步骤会自动展开相关模块；点选对象或查看关联、职责时暂停播放。
 
@@ -101,7 +101,14 @@ tests/              单元测试、浏览器回归与测试输入
 
 ### 1. 获取完整 Skill
 
-需要 **Node.js 24.x**。从 [Releases](https://github.com/JX05120LLL/System-Flow/releases/latest) 下载并解压 `system-flow-v2.1.0.zip`，或克隆仓库；在**包含 `system-flow/` 的父目录**打开终端。发布 ZIP 内也有这一层目录，以下路径适用于两种获取方式。
+需要 **Node.js 24.x**。从 [Releases](https://github.com/JX05120LLL/3D-System-Flow/releases/latest) 下载并解压 `system-flow-v2.1.0.zip`，或克隆仓库：
+
+```bash
+git clone https://github.com/JX05120LLL/3D-System-Flow.git
+cd 3D-System-Flow
+```
+
+在**包含 `system-flow/` 的父目录**打开终端。发布 ZIP 内也有这一层目录，以下路径适用于两种获取方式。
 
 生成只需要完整 Skill 目录和 Node.js，无需安装开发依赖或 Three.js。
 
@@ -136,11 +143,11 @@ node system-flow/scripts/export.mjs output/microservices-2d.html --format jpg --
 
 ## 安装 Skill
 
-1. 从 [GitHub Releases](https://github.com/JX05120LLL/System-Flow/releases/latest) 下载 `system-flow-v2.1.0.zip` 与 `SHA256SUMS.txt`，或直接使用仓库中的 [`system-flow/`](system-flow/) 目录。
+1. 从 [GitHub Releases](https://github.com/JX05120LLL/3D-System-Flow/releases/latest) 下载 `system-flow-v2.1.0.zip` 与 `SHA256SUMS.txt`，或直接使用仓库中的 [`system-flow/`](system-flow/) 目录。
 2. 解压后将完整的 `system-flow/` 复制到编程工具的 Skills 目录，保持目录名为 `system-flow`。以 Codex 为例，个人安装路径为 `~/.agents/skills/system-flow/`，项目安装路径为 `<项目>/.agents/skills/system-flow/`，见 [OpenAI 官方安装说明](https://learn.chatgpt.com/docs/build-skills)。其他支持 `SKILL.md` 的工具按各自配置选择目录。
 3. 保留整个目录，包括 `SKILL.md`、`LICENSE`、第三方声明、`agents/`、`assets/`、`references/`、`examples/`、`scripts/`、`package.json` 与锁文件。安装 Node.js 24.x 后即可生成；自动静态导出需在实际安装的 Skill 目录执行 `npm ci` 并安装 Chromium。
 
-展示名和触发名为 **System Flow / `system-flow`**。在 Codex CLI / IDE 中可用 `/skills` 查看，用 `$system-flow` 显式调用；安装后若未出现，重启 Codex 再检查。ZIP 包含已构建的 2D/3D 运行时和示例数据，生成不依赖仓库源码或开发环境。
+项目名称为 **3D System Flow**，Skill 的展示名和触发名为 **System Flow / `system-flow`**。在 Codex CLI / IDE 中可用 `/skills` 查看，用 `$system-flow` 显式调用；安装后若未出现，重启 Codex 再检查。ZIP 包含已构建的 2D/3D 运行时和示例数据，生成不依赖仓库源码或开发环境。
 
 **生成 3D 沙盘与请求演示：**
 
